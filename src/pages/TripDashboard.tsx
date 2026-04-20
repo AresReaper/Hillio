@@ -46,15 +46,6 @@ export default function TripDashboard() {
     'Notification' in window && Notification.permission === 'granted'
   );
   
-  const [isLightMode, setIsLightMode] = useState(false);
-
-  const toggleTheme = () => {
-    const root = document.documentElement;
-    root.classList.toggle('light-mode');
-    setIsLightMode(!isLightMode);
-    setShowMoreMenu(false);
-  };
-
   // State for image generation
   const [sharingUser, setSharingUser] = useState<User | null>(null);
   const [sharingQrUrl, setSharingQrUrl] = useState('');
@@ -320,13 +311,6 @@ export default function TripDashboard() {
       usersUnsub();
     };
   }, [tripId, trip]);
-
-  const handleShare = () => {
-    const publicOrigin = window.location.origin.replace('ais-dev', 'ais-pre');
-    const joinUrl = `${publicOrigin}/trip/${tripId}/join`;
-    navigator.clipboard.writeText(joinUrl);
-    alert('Join link copied to clipboard!');
-  };
 
   const handleExcelUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -604,6 +588,21 @@ export default function TripDashboard() {
               <span>Import Manifest</span>
               <input type="file" accept=".xlsx, .xls" className="hidden" onChange={handleExcelUpload} disabled={importing} />
             </label>
+            {missingCount > 0 && (
+              <button
+                onClick={() => {
+                  const unboarded = users.filter(u => u.status !== 'Boarded');
+                  const names = unboarded.map(u => u.name).join(', ');
+                  const text = `⚠️ *FINAL CALL* ⚠️\n\nHi everyone, the trip to ${trip?.destination || trip?.name} is boarding NOW. \n\nWe are waiting for: ${names}.\n\nPlease head to the boarding gate immediately.`;
+                  navigator.clipboard.writeText(text);
+                  alert('Final Call message copied to clipboard!\n\nPaste it into your WhatsApp Group to alert the missing passengers.');
+                }}
+                className="col-span-2 flex items-center justify-center gap-3 p-4 bg-[#bbff4d]/10 border border-[#bbff4d]/30 hover:bg-[#bbff4d]/20 rounded-[24px] transition-all text-sm font-bold text-[#bbff4d] group"
+              >
+                <MessageCircle size={18} className="group-hover:scale-110 transition-transform" />
+                <span>Broadcast Final Call ({missingCount})</span>
+              </button>
+            )}
           </div>
         </div>
 
@@ -915,13 +914,6 @@ export default function TripDashboard() {
               className="fixed right-6 bottom-24 w-56 glass-card p-2 z-[70] shadow-2xl backdrop-blur-3xl border-brand-primary/20 pointer-events-auto origin-bottom-right"
             >
               <button 
-                onClick={toggleTheme}
-                className="flex items-center gap-3 w-full p-4 text-sm text-white hover:bg-[#bbff4d]/10 hover:text-[#bbff4d] rounded-2xl transition-colors group"
-              >
-                {isLightMode ? <Moon size={18} className="text-[#bbff4d]" /> : <Sun size={18} className="text-[#bbff4d]" />}
-                <span>{isLightMode ? 'Dark Theme' : 'Light Theme'}</span>
-              </button>
-              <button 
                 onClick={() => {
                   setShowMoreMenu(false);
                   setShowAccessHub(true);
@@ -930,13 +922,6 @@ export default function TripDashboard() {
               >
                 <ShieldCheck size={18} className="text-[#bbff4d] group-hover:scale-110 transition-transform" />
                 <span>Manage Access</span>
-              </button>
-              <button 
-                onClick={handleShare}
-                className="flex items-center gap-3 w-full p-4 text-sm text-white hover:bg-white/5 rounded-2xl transition-colors group"
-              >
-                <Share2 size={18} className="text-brand-primary group-hover:scale-110 transition-transform" />
-                <span>Invite Link</span>
               </button>
               <button 
                 onClick={() => {

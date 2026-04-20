@@ -3,8 +3,8 @@ import { useParams } from 'react-router-dom';
 import { doc, onSnapshot, updateDoc, serverTimestamp, setDoc, collection } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { User, Trip } from '../types';
-import { Share2, MapPin, Ticket as TicketIcon, XCircle, Clock, AlertTriangle, CheckCircle2 } from 'lucide-react';
-import { motion } from 'motion/react';
+import { Share2, MapPin, Ticket as TicketIcon, XCircle, Clock, AlertTriangle, CheckCircle2, Cloud, Sun, Sparkles, Navigation } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 import QRCode from 'qrcode';
 import SmartTicket from '../components/SmartTicket';
 import DigitalSouvenir from '../components/DigitalSouvenir';
@@ -22,6 +22,77 @@ export default function UserQR() {
   const [timeLeft, setTimeLeft] = useState<string>('');
   const [sosLoading, setSosLoading] = useState(false);
   const ticketRef = useRef<HTMLDivElement>(null);
+
+  // New Features State
+  const [weather, setWeather] = useState<{temp: number, condition: string} | null>(null);
+  const [tips, setTips] = useState<string[]>([]);
+  const [loadingTips, setLoadingTips] = useState(false);
+  const [showTips, setShowTips] = useState(false);
+
+  useEffect(() => {
+    if (!trip?.destination) return;
+    
+    // Fetch Weather Sentinel Data (Open-Meteo)
+    const fetchWeather = async () => {
+      try {
+        const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(trip.destination!)}&count=1`);
+        const geoData = await geoRes.json();
+        if (geoData.results && geoData.results.length > 0) {
+          const { latitude, longitude } = geoData.results[0];
+          const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`);
+          const weatherData = await weatherRes.json();
+          if (weatherData.current_weather) {
+            const code = weatherData.current_weather.weathercode;
+            let condition = 'Clear / Varies';
+            if (code <= 3) condition = 'Clear / Cloudy';
+            else if (code <= 48) condition = 'Foggy';
+            else if (code <= 69) condition = 'Rainy';
+            else if (code <= 79) condition = 'Snowy';
+            else condition = 'Stormy';
+            
+            setWeather({
+              temp: Math.round(weatherData.current_weather.temperature),
+              condition
+            });
+          }
+        }
+      } catch (e) {
+        console.warn("Weather Sentinel failed to load", e);
+      }
+    };
+    
+    // Only fetch weather if we haven't already
+    if (!weather) {
+      fetchWeather();
+    }
+  }, [trip?.destination, weather]);
+
+  const loadSmartGuide = async () => {
+    if (!trip?.destination) return;
+    if (tips.length > 0) {
+      setShowTips(!showTips);
+      return;
+    }
+    
+    setLoadingTips(true);
+    try {
+      const res = await fetch('/api/smart-guide', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ destination: trip.destination })
+      });
+      const data = await res.json();
+      if (data.tips) {
+        setTips(data.tips);
+        setShowTips(true);
+      }
+    } catch (e) {
+      console.error(e);
+      alert('AI Guide could not be loaded right now (Server disconnected/No AI key).');
+    } finally {
+      setLoadingTips(false);
+    }
+  };
 
   useEffect(() => {
     if (!trip?.tripDate) return;
@@ -292,23 +363,70 @@ export default function UserQR() {
       )}
 
       {trip?.destination && (
-        <div className="mt-6 w-full max-w-sm bg-[#2A2E2B] border border-white/5 rounded-[32px] p-4 text-left shadow-[0_0_50px_rgba(255,255,255,0.02)]">
-          <div className="flex items-center gap-2 text-[#bbff4d] font-bold mb-3">
-            <MapPin size={18} />
-            <span>Meeting Point</span>
+        <div className="mt-6 w-full max-w-sm space-y-4">
+          <div className="bg-[#2A2E2B] border border-white/5 rounded-[32px] p-4 text-left shadow-[0_0_50px_rgba(255,255,255,0.02)]">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2 text-[#bbff4d] font-bold">
+                <MapPin size={18} />
+                <span>Meeting Point</span>
+              </div>
+              {weather && (
+                <div className="flex items-center gap-1.5 bg-sky-500/10 text-sky-400 px-2.5 py-1 rounded-full text-xs font-bold border border-sky-500/20">
+                  {weather.condition.includes('Clear') ? <Sun size={14} /> : <Cloud size={14} />}
+                  {weather.temp}°C • {weather.condition}
+                </div>
+              )}
+            </div>
+            
+            <div className="rounded-xl overflow-hidden mb-3 border border-white/10">
+              <LeafletMap address={trip.destination} height="150px" />
+            </div>
+            <a
+              href={`https://www.openstreetmap.org/search?query=${encodeURIComponent(trip.destination)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-xl text-sm font-medium flex items-center justify-center gap-2 transition-colors"
+            >
+              <Navigation size={16} />
+              Navigate
+            </a>
           </div>
-          <div className="rounded-xl overflow-hidden mb-3 border border-white/10">
-            <LeafletMap address={trip.destination} height="150px" />
+
+          <div className="bg-[#2A2E2B] border border-white/5 rounded-[32px] overflow-hidden shadow-[0_0_50px_rgba(255,255,255,0.02)] transition-all">
+            <button 
+              onClick={loadSmartGuide}
+              className="w-full p-4 flex items-center justify-between text-left hover:bg-white/5 transition-colors group"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-400 group-hover:bg-purple-500 group-hover:text-white transition-all">
+                  {loadingTips ? <div className="w-5 h-5 border-2 border-purple-400/30 border-t-purple-400 rounded-full animate-spin" /> : <Sparkles size={20} />}
+                </div>
+                <div>
+                  <div className="text-sm font-bold text-white group-hover:text-purple-400 transition-colors">AI Smart Guide</div>
+                  <div className="text-[10px] text-white/40 uppercase tracking-widest font-black">Local tips for {trip.destination}</div>
+                </div>
+              </div>
+            </button>
+            <AnimatePresence>
+              {showTips && tips.length > 0 && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  className="px-4 pb-4 border-t border-white/5"
+                >
+                  <ul className="mt-4 space-y-3">
+                    {tips.map((tip, idx) => (
+                      <li key={idx} className="text-sm text-white/70 leading-relaxed flex items-start gap-3 bg-white/5 p-3 rounded-2xl">
+                        <span className="text-purple-400 font-black mt-0.5">{idx + 1}.</span>
+                        {tip}
+                      </li>
+                    ))}
+                  </ul>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
-          <a
-            href={`https://www.openstreetmap.org/search?query=${encodeURIComponent(trip.destination)}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="w-full py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-xl text-sm font-medium flex items-center justify-center gap-2 transition-colors"
-          >
-            <MapPin size={16} />
-            Open in OpenStreetMap
-          </a>
         </div>
       )}
 

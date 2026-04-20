@@ -117,6 +117,48 @@ app.get('/api/shorten', async (req, res) => {
   }
 });
 
+import { GoogleGenAI } from '@google/genai';
+
+let autoGenAIClient: GoogleGenAI | null = null;
+function getGenAI() {
+  if (!autoGenAIClient && process.env.GEMINI_API_KEY) {
+    autoGenAIClient = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+  }
+  return autoGenAIClient;
+}
+
+app.post('/api/smart-guide', async (req, res) => {
+  try {
+    const { destination } = req.body;
+    if (!destination) {
+      return res.status(400).json({ error: 'Missing destination' });
+    }
+    
+    const ai = getGenAI();
+    if (!ai) {
+      return res.status(503).json({ error: 'AI capabilities are not configured.' });
+    }
+
+    const prompt = `You are an expert local guide for ${destination}. Provide exactly 3 short, punchy tips or "hidden gems" for a traveler visiting this destination. Format as a JSON array of strings. Do not use markdown blocks, just the pure JSON string. Example: ["tip 1", "tip 2", "tip 3"]`;
+    
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: prompt,
+      config: {
+        responseMimeType: "application/json"
+      }
+    });
+
+    const resultText = response.text || "[]";
+    const tips = JSON.parse(resultText);
+    
+    res.json({ tips });
+  } catch (error) {
+    console.error('AI Guide Error:', error);
+    res.status(500).json({ error: 'Failed to generate guide' });
+  }
+});
+
 // Endpoint to notify users via Email
 app.post('/api/notify', async (req, res) => {
   try {
