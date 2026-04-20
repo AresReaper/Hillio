@@ -79,29 +79,18 @@ export default function LeafletMap({ address, height = '200px', zoom = 14, admin
       setLoading(true);
       setError(false);
       try {
-        let response;
-        try {
-          // Try API proxy first
-          response = await fetch(`/api/geocode?address=${encodeURIComponent(address)}`, {
-            headers: { 'Accept': 'application/json' }
-          });
-          if (!response.ok) throw new Error('Proxy failed');
-        } catch (proxyError) {
-          // Fallback to direct client-side call if Vercel serverless proxy fails
-          console.warn('Geocoding proxy failed, falling back to direct client call', proxyError);
-          response = await fetch(
-            `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`,
-            { headers: { 'Accept': 'application/json' } }
-          );
-        }
-
+        // Direct client-side call to Open-Meteo Geocoding API
+        // This is much faster, has no CORS issues, and doesn't require User-Agent spoofing
+        const response = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(address)}&count=1&language=en&format=json`);
+        
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
         
         const data = await response.json();
-        if (data && data.length > 0) {
-          setCoords([parseFloat(data[0].lat), parseFloat(data[0].lon)]);
+        
+        if (data.results && data.results.length > 0) {
+          setCoords([data.results[0].latitude, data.results[0].longitude]);
         } else {
           setError(true);
         }
