@@ -115,7 +115,7 @@ export default function AdminLogin() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-[#161917] text-white">
+    <div className="min-h-screen w-full flex flex-col items-center justify-center p-6 bg-[#161917] text-white">
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
