@@ -1,6 +1,6 @@
 import express from 'express';
 import path from 'path';
-import { apiRouter } from './api-router';
+import { apiRouter } from './api-router.ts';
 
 const app = express();
 app.use(express.json());
