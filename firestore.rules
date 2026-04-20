@@ -1,0 +1,94 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin(tripData) {
+      return isSignedIn() && (
+        tripData.creatorId == request.auth.uid || 
+        (tripData.get('admins', []) is list && request.auth.uid in tripData.get('admins', []))
+      );
+    }
+
+    function isValidShortLink(data) {
+      return data.shortId is string && data.shortId.size() > 0 && data.shortId.size() <= 20 &&
+             data.targetUrl is string && data.targetUrl.size() > 0 && data.targetUrl.size() <= 1000 &&
+             data.createdAt is timestamp;
+    }
+
+    // Short Links:
+    match /short_links/{shortId} {
+      allow read: if true;
+      allow create: if isValidShortLink(request.resource.data);
+    }
+
+    // Admins Collection:
+    // - User can create/update their own profile
+    // - Authenticated users can read (for searching by email)
+    match /admins/{uid} {
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn() && request.auth.uid == uid;
+    }
+
+    function isValidTrip(data) {
+      return data.name is string && data.name.size() > 0 && data.name.size() < 100 &&
+             data.creatorId is string &&
+             data.createdAt is timestamp &&
+             (!('admins' in data) || data.admins is list) &&
+             (!('accessKey' in data) || (data.accessKey is string || data.accessKey == null));
+    }
+
+    function isValidUser(data) {
+      return data.name is string && data.name.size() > 0 && data.name.size() < 100 &&
+             data.status in ['Not Boarded', 'Boarded'] &&
+             data.joinedAt is timestamp &&
+             (!('sos' in data) || data.sos is map);
+    }
+
+    // Trips:
+    match /trips/{tripId} {
+      // 1. Read access for individual trips (Allows passengers to view dashboards/tickets)
+      allow get: if true;
+      // 2. List access only for authenticated users (Prevents public discovery)
+      allow list: if isSignedIn();
+      
+      // 3. Create access for authenticated users
+      allow create: if isSignedIn() && 
+                    request.resource.data.creatorId == request.auth.uid && 
+                    isValidTrip(request.resource.data);
+      
+      // 3. Update access logic
+      allow update: if isSignedIn() && (
+        // Case A: Existing Admin OR Creator update
+        (isAdmin(resource.data) && (
+          request.resource.data.creatorId == resource.data.creatorId &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name', 'destination', 'tripDate', 'admins', 'accessKey'])
+        )) ||
+        // Case B: Co-Admin joining via Access Key
+        (
+          resource.data.get('accessKey', '') != '' &&
+          request.resource.data.get('admins', []).hasAll(resource.data.get('admins', [])) &&
+          request.auth.uid in request.resource.data.get('admins', []) &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['admins'])
+        )
+      );
+      
+      allow delete: if isSignedIn() && resource.data.creatorId == request.auth.uid;
+
+      match /users/{userId} {
+        allow get: if true;
+        allow create: if isValidUser(request.resource.data);
+        allow list, delete: if isAdmin(get(/databases/$(database)/documents/trips/$(tripId)).data);
+        
+        allow update: if isAdmin(get(/databases/$(database)/documents/trips/$(tripId)).data) || 
+                       (isSignedIn() && request.resource.data.diff(resource.data).affectedKeys().hasAny(['sos', 'status', 'boardedAt']));
+      }
+    }
+  }
+}

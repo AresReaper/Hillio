@@ -1,0 +1,113 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Syne:wght@600;700;800&display=swap');
+@import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
+
+@theme {
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Syne", sans-serif;
+  
+  --color-brand-primary: #bbff4d;
+  --color-brand-secondary: #0f172a;
+  --color-fog: #f8fafc;
+  --color-mist: rgba(248, 250, 252, 0.05);
+}
+
+@layer base {
+  html, body {
+    height: 100%;
+    width: 100%;
+    overflow-x: hidden;
+    overscroll-behavior-y: none;
+    @apply antialiased;
+  }
+  
+  #root {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  body {
+    @apply bg-slate-950 text-slate-100 min-h-screen font-sans;
+    background-image: 
+      radial-gradient(circle at 0% 0%, rgba(187, 255, 77, 0.05) 0%, transparent 40%),
+      radial-gradient(circle at 100% 100%, rgba(56, 189, 248, 0.05) 0%, transparent 40%);
+    transition: background-color 0.5s ease, color 0.5s ease;
+  }
+
+  .light-mode body {
+    @apply bg-[#f1f5f9] text-slate-900;
+    background-image: 
+      radial-gradient(circle at 0% 0%, rgba(16, 185, 129, 0.08) 0%, transparent 50%),
+      radial-gradient(circle at 100% 100%, rgba(59, 130, 246, 0.08) 0%, transparent 50%);
+  }
+
+  .light-mode .glass {
+    @apply bg-white/60 backdrop-blur-xl border-slate-200 shadow-slate-200/50 text-slate-900;
+  }
+
+  .light-mode .glass-card {
+    @apply bg-white/90 backdrop-blur-2xl border-slate-200 shadow-xl shadow-slate-200/50;
+  }
+
+  .light-mode .text-white { @apply text-slate-900; }
+  .light-mode .text-white\/80 { @apply text-slate-800; }
+  .light-mode .text-white\/60 { @apply text-slate-600; }
+  .light-mode .text-white\/50 { @apply text-slate-500; }
+  .light-mode .text-white\/40 { @apply text-slate-500; }
+  .light-mode .text-white\/30 { @apply text-slate-400; }
+  .light-mode .text-white\/20,
+  .light-mode .text-white\/10 { @apply text-slate-300; }
+  
+  .light-mode .bg-white\/5 { @apply bg-slate-200/50; }
+  .light-mode .border-white\/5,
+  .light-mode .border-white\/10 { @apply border-slate-200; }
+  
+  .light-mode .bg-slate-900 { @apply bg-white shadow-xl shadow-slate-200/50; }
+  .light-mode .bg-slate-950 { @apply bg-[#f8fafc]; }
+  .light-mode .bg-\[\#2A2E2B\] { @apply bg-white border-slate-200 shadow-2xl; }
+  .light-mode .premium-gradient {
+    background: linear-gradient(135deg, rgba(8, 145, 178, 0.1) 0%, rgba(16, 185, 129, 0.1) 100%);
+  }
+}
+
+@utility glass {
+  @apply backdrop-blur-xl bg-slate-900/40 border border-white/10;
+}
+
+@utility glass-card {
+  @apply backdrop-blur-2xl bg-white/5 border border-white/10 rounded-[32px] p-6 shadow-2xl;
+}
+
+@utility premium-gradient {
+  background: linear-gradient(135deg, #bbff4d 0%, #86efac 100%);
+}
+
+@utility btn-primary {
+  @apply premium-gradient hover:opacity-90 text-slate-950 font-bold py-4 px-8 rounded-2xl transition-all active:scale-95 shadow-xl shadow-brand-primary/10;
+}
+
+@utility btn-glass {
+  @apply backdrop-blur-md bg-white/10 hover:bg-white/20 text-white font-semibold py-4 px-8 rounded-2xl transition-all active:scale-95 border border-white/10;
+}
+
+@utility input-field {
+  @apply bg-white/5 border border-white/10 rounded-[20px] px-5 py-4 focus:outline-none focus:ring-2 focus:ring-brand-primary/50 transition-all text-white placeholder:text-slate-500 backdrop-blur-sm;
+}
+
+@utility status-badge {
+  @apply px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider;
+}
+
+@utility custom-scrollbar {
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    @apply bg-white/10 rounded-full hover:bg-white/20 transition-colors;
+  }
+}
+

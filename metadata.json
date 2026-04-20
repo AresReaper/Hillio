@@ -1,0 +1,5 @@
+{
+  "name": "Hillo",
+  "description": "Premium group trip management with QR boarding, real-time tracking, and elegant hill-station inspired design.",
+  "requestFramePermissions": ["camera", "geolocation"]
+}
