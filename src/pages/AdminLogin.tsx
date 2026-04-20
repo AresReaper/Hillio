@@ -34,6 +34,13 @@ export default function AdminLogin() {
         // Just ignore
       } else if (err.code === 'auth/operation-not-allowed') {
         setError('Google sign-in is not enabled in Firebase. Please enable it in the Firebase Console.');
+      } else if (err.code === 'auth/unauthorized-domain') {
+        setError(
+          <div className="flex flex-col gap-2">
+            <strong>Domain Not Authorized</strong>
+            <p>You must add this Vercel domain to Firebase Console &rarr; Authentication &rarr; Settings &rarr; Authorized Domains.</p>
+          </div>
+        );
       } else {
         setError('Failed to sign in with Google. Please try again.');
       }
