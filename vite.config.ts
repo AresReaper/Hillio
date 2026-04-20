@@ -15,8 +15,8 @@ export default defineConfig(({mode}) => {
         devOptions: { enabled: true },
         includeAssets: ['icon.svg'],
         manifest: {
-          name: 'Hill Trip Management',
-          short_name: 'Hill Trip',
+          name: 'Hillo App',
+          short_name: 'Hillo',
           description: 'Smart Ticket and Operations Dashboard',
           theme_color: '#020617',
           background_color: '#020617',
