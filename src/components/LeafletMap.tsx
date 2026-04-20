@@ -78,24 +78,66 @@ export default function LeafletMap({ address, height = '200px', zoom = 14, admin
     const geocode = async () => {
       setLoading(true);
       setError(false);
+      
+      const query = encodeURIComponent(address);
+      let lat: number | null = null;
+      let lon: number | null = null;
+
       try {
-        // Direct client-side call to Open-Meteo Geocoding API
-        // This is much faster, has no CORS issues, and doesn't require User-Agent spoofing
-        const response = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(address)}&count=1&language=en&format=json`);
-        
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+        // LAYER 1: Photon (Komoot) - Best for POIs, Landmarks, and local addresses (Uses OSM data without strict blocks)
+        try {
+          const res = await fetch(`https://photon.komoot.io/api/?q=${query}&limit=1`);
+          if (res.ok) {
+            const data = await res.json();
+            if (data.features && data.features.length > 0) {
+              lon = data.features[0].geometry.coordinates[0];
+              lat = data.features[0].geometry.coordinates[1];
+            }
+          }
+        } catch (e) {
+          console.warn("Photon geocoding failed", e);
         }
-        
-        const data = await response.json();
-        
-        if (data.results && data.results.length > 0) {
-          setCoords([data.results[0].latitude, data.results[0].longitude]);
+
+        // LAYER 2: Nominatim Client-Side Fallback (Direct)
+        if (lat === null || lon === null) {
+          try {
+            const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}&limit=1`);
+            if (res.ok) {
+              const data = await res.json();
+              if (data && data.length > 0) {
+                lat = parseFloat(data[0].lat);
+                lon = parseFloat(data[0].lon);
+              }
+            }
+          } catch (e) {
+            console.warn("Nominatim geocoding failed", e);
+          }
+        }
+
+        // LAYER 3: Open-Meteo Fallback (Best for generic cities/towns)
+        if (lat === null || lon === null) {
+          try {
+            const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${query}&count=1&language=en&format=json`);
+            if (res.ok) {
+              const data = await res.json();
+              if (data.results && data.results.length > 0) {
+                lat = data.results[0].latitude;
+                lon = data.results[0].longitude;
+              }
+            }
+          } catch (e) {
+            console.warn("OpenMeteo geocoding failed", e);
+          }
+        }
+
+        // Evaluate Final Results
+        if (lat !== null && lon !== null) {
+          setCoords([lat, lon]);
         } else {
           setError(true);
         }
       } catch (err) {
-        console.error('Geocoding error:', err);
+        console.error('Fatal geocoding error:', err);
         setError(true);
       } finally {
         setLoading(false);
