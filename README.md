@@ -1,20 +1,27 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+🎫 Smart Ticket: The Ultimate Passenger Manifest & Boarding System
 
-# Run and deploy your AI Studio app
-
-This contains everything you need to run your app locally.
-
-View your app in AI Studio: https://ai.studio/apps/77b0e1de-a18c-4ee0-8ae0-bf0c4b5857c6
-
-## Run Locally
-
-**Prerequisites:**  Node.js
+A high-performance, premium travel operations suite designed for tour operators, hill station expeditions, and group transit.
+Transform your boarding process from messy spreadsheets into a seamless, digital "Gate Operations" experience. Smart Ticket combines a sophisticated glassmorphism UI with real-time tracking and automated ticket delivery.
 
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+✨ Key Features
+📱 Smart Boarding Passes: High-contrast QR tickets delivered via WhatsApp/Email with built-in "Digital Souvenir" postcards.
+⚡ Ultra-Fast QR Scanner: Precision gate-scanning logic with real-time validation, terminal-state locking, and instant boarding notifications.
+🆘 Integrated SOS System: Real-time location-aware emergency alerts. If a traveler is lost, they tap one button; the Admin gets a GPS-pinned map alert instantly.
+🔗 Built-in URL Shortener: Automatic conversion of long manifesting URLs into tiny, shareable tinyurl.com links for clean messaging.
+📈 Admin Command Center: A "Bento-style" dashboard for managing passenger manifests, tracking boarding percentages, and monitoring fleet security.
+🗺️ Interactive Geocoding: Real-time map integration to visualize passenger home-drop points and emergency locations.
+
+🛠️ Tech Stack & Architecture
+
+Frontend: React 18 + TypeScript
+Styling: Tailwind CSS with a custom Glassmorphism/Premium dark design system
+Database & Auth: Firebase Firestore & Authentication
+Motion: Framer Motion for spring-physics interactions and fluid UI transitions
+Utilities: Lucide React (Icons), html-to-image (Ticket Generation), Leaflet (Maps)
+🔒 Security First
+Pillar-Based Firebase Rules: Mathematically hardened Firestore security preventing identity spoofing and "Update-Gaps."
+Role-Based Access (RBAC): Synchronous owner/admin verification for all gate operations.
+Validated Identity: Strict schema checking for every boarding event and manifest update.
+🚀 Why "Smart Ticket"?
+Travel operators in remote areas or hill stations often face signal drops and boarding chaos. Smart Ticket was built to be fast, offline-resilient, and so visually impressive that it builds immediate trust with tourists.
