@@ -76,19 +76,32 @@ export default function UserQR() {
     
     setLoadingTips(true);
     try {
-      const res = await fetch('/api/smart-guide', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ destination: trip.destination })
-      });
+      const res = await fetch(`https://en.wikipedia.org/w/api.php?action=query&origin=*&prop=extracts&exintro=true&explaintext=true&titles=${encodeURIComponent(trip.destination)}&format=json`);
       const data = await res.json();
-      if (data.tips) {
-        setTips(data.tips);
+      
+      const pages = data.query?.pages;
+      if (!pages) throw new Error("No pages returned");
+      
+      const pageId = Object.keys(pages)[0];
+      
+      if (pageId === '-1' || !pages[pageId].extract) {
+        setTips(["We couldn't find specific facts for this exact destination name, but get ready for a great trip!"]);
         setShowTips(true);
+        return;
       }
+
+      const extract = pages[pageId].extract;
+      
+      // Clean up the extract and split into 3 readable facts
+      const sentences = extract.split(/(?<=[.!?])\s+/)
+        .filter((s: string) => s.length > 20)
+        .slice(0, 3);
+        
+      setTips(sentences);
+      setShowTips(true);
     } catch (e) {
       console.error(e);
-      alert('AI Guide could not be loaded right now (Server disconnected/No AI key).');
+      alert('Guide could not be loaded right now (Network issue).');
     } finally {
       setLoadingTips(false);
     }
@@ -402,8 +415,8 @@ export default function UserQR() {
                   {loadingTips ? <div className="w-5 h-5 border-2 border-purple-400/30 border-t-purple-400 rounded-full animate-spin" /> : <Sparkles size={20} />}
                 </div>
                 <div>
-                  <div className="text-sm font-bold text-white group-hover:text-purple-400 transition-colors">AI Smart Guide</div>
-                  <div className="text-[10px] text-white/40 uppercase tracking-widest font-black">Local tips for {trip.destination}</div>
+                  <div className="text-sm font-bold text-white group-hover:text-purple-400 transition-colors">Destination Guide</div>
+                  <div className="text-[10px] text-white/40 uppercase tracking-widest font-black">Quick facts about {trip.destination}</div>
                 </div>
               </div>
             </button>
