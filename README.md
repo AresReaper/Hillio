@@ -1,20 +1,32 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# Hillo - Smart Trip Operations Dashboard
 
-# Run and deploy your AI Studio app
+Hillo is a sophisticated, full-stack trip management application designed for expedition leaders and travel operators. It streamlines boarding, live tracking, and passenger safety in a high-performance web interface.
 
-This contains everything you need to run your app locally.
+## 🚀 Features
 
-View your app in AI Studio: https://ai.studio/apps/77b0e1de-a18c-4ee0-8ae0-bf0c4b5857c6
+- **Smart Boarding Pass**: A beautiful, QR-based digital ticket for passengers.
+- **Real-time Operations Dashboard**: Track group check-ins and trip status live.
+- **Dynamic Link Previews**: Optimized with Open Graph meta tags for beautiful sharing on social media.
+- **Multi-Layer Geocoding**: Robust location discovery using a 3-tier cascade strategy (Photon, Nominatim, and Open-Meteo) to ensure landmarks are always found on the map.
+- **Destination Guide**: Instant, free travel facts pulled directly from the Wikipedia API.
+- **Weather Sentinel**: Live weather forecasting for the destination.
+- **PWA Ready**: Installable on mobile devices with custom branding and icons.
 
-## Run Locally
+## 🛠️ Tech Stack
 
-**Prerequisites:**  Node.js
+- **Frontend**: React 18, TypeScript, Vite
+- **Styling**: Tailwind CSS, Lucide Icons, Framer Motion
+- **Backend**: Node.js (Express)
+- **Database**: Firebase Firestore (NoSQL)
+- **Authentication**: Firebase Auth
+- **Maps**: Leaflet with OpenStreetMap
 
+## ⚡ Quick Start
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+1. **Clone the repository**
+2. **Install dependencies**: `npm install`
+3. **Configure Environment**: Add your Firebase configuration to `firebase-applet-config.json`.
+4. **Run Development Server**: `npm run dev`
+
+---
+*Built with ❤️ for adventurous travelers.*
