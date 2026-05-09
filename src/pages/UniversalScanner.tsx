@@ -105,18 +105,27 @@ export default function UniversalScanner() {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="p-6 pt-12 flex flex-col items-center min-h-screen bg-[#161917]"
+      className="fixed inset-0 flex flex-col brand-surface overflow-hidden"
     >
-      <div className="w-full flex justify-between items-center mb-8">
-        <Link to="/" className="p-3 bg-[#2A2E2B] rounded-2xl text-white/50 border border-white/5">
+      {/* Dynamic Background */}
+      <div className="absolute inset-0 premium-gradient opacity-10 pointer-events-none" />
+
+      {/* Header Overlay */}
+      <div className="absolute top-0 left-0 right-0 z-20 p-8 flex justify-between items-center bg-gradient-to-b from-deep-forest to-transparent">
+        <Link to="/" className="w-12 h-12 glass rounded-2xl flex items-center justify-center text-white/60 hover:text-white transition-all active:scale-95">
           <ArrowLeft size={20} />
         </Link>
-        <div className="w-11" /> {/* Spacer */}
+        <div className="text-center">
+          <div className="text-[10px] font-black uppercase tracking-[0.3em] text-white/20 mb-1">Gate Operations</div>
+          <div className="text-sm font-bold text-white tracking-widest uppercase">Global Scanner</div>
+        </div>
+        <div className="w-12 h-12" /> {/* Spacer */}
       </div>
 
-      <div className="w-full bg-[#2A2E2B] rounded-[32px] overflow-hidden relative p-0 aspect-square flex items-center justify-center border border-[#bbff4d]/30 shadow-[0_0_30px_rgba(187,255,77,0.1)]">
-        {scanning ? (
-          <QrScanner
+      <div className="relative flex-1 flex flex-col items-center justify-center p-6 gap-12 mt-16">
+        <div className="w-full max-w-sm brand-panel overflow-hidden relative p-0 aspect-square flex items-center justify-center border-brand-primary/30 shadow-[0_0_30px_rgba(187,255,77,0.1)]">
+          {scanning ? (
+            <QrScanner
             onScan={handleScan}
             onError={handleCameraError}
             components={{
@@ -201,12 +210,13 @@ export default function UniversalScanner() {
       </div>
 
       <div className="mt-8 flex items-center gap-3 text-white/40 text-sm">
-        <ScanLine size={18} className="animate-pulse text-[#bbff4d]" />
+        <ScanLine size={18} className="animate-pulse text-brand-primary" />
         <span>Align any valid boarding pass QR code</span>
       </div>
 
-      <div className="mt-auto pt-12 text-center text-[10px] text-white/20 uppercase tracking-widest">
+      <div className="mt-auto pt-12 text-center text-[10px] text-white/20 uppercase tracking-widest pb-6">
         Universal Admin Mode
+      </div>
       </div>
     </motion.div>
   );

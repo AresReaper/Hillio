@@ -134,13 +134,13 @@ export default function Scanner() {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="fixed inset-0 flex flex-col bg-slate-950 overflow-hidden"
+      className="fixed inset-0 flex flex-col brand-surface overflow-hidden"
     >
       {/* Dynamic Background */}
       <div className="absolute inset-0 premium-gradient opacity-10 pointer-events-none" />
       
       {/* Header Overlay */}
-      <div className="absolute top-0 left-0 right-0 z-20 p-8 flex justify-between items-center bg-gradient-to-b from-slate-950/80 to-transparent">
+      <div className="absolute top-0 left-0 right-0 z-20 p-8 flex justify-between items-center bg-gradient-to-b from-deep-forest to-transparent">
         <Link to={`/trip/${tripId}`} className="w-12 h-12 glass rounded-2xl flex items-center justify-center text-white/60 hover:text-white transition-all active:scale-95">
           <ArrowLeft size={20} />
         </Link>

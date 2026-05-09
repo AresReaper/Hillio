@@ -45,6 +45,7 @@ export default function TripDashboard() {
   const [notificationsEnabled, setNotificationsEnabled] = useState(
     'Notification' in window && Notification.permission === 'granted'
   );
+  const [filterTab, setFilterTab] = useState<'all' | 'missing' | 'boarded' | 'sos' | 'nophone'>('all');
   
   // State for image generation
   const [sharingUser, setSharingUser] = useState<User | null>(null);
@@ -426,8 +427,17 @@ export default function TripDashboard() {
 
   const boardedCount = users.filter(u => u.status === 'Boarded').length;
   const missingCount = users.length - boardedCount;
+  const progressPercent = users.length === 0 ? 0 : Math.round((boardedCount / users.length) * 100);
 
-  const sortedUsers = [...users].sort((a, b) => {
+  const filteredUsers = users.filter(u => {
+    if (filterTab === 'missing') return u.status !== 'Boarded';
+    if (filterTab === 'boarded') return u.status === 'Boarded';
+    if (filterTab === 'sos') return u.sos?.active;
+    if (filterTab === 'nophone') return !u.phone;
+    return true; // 'all'
+  });
+
+  const sortedUsers = [...filteredUsers].sort((a, b) => {
     if (sortOption === 'name-asc') {
       return a.name.localeCompare(b.name);
     } else if (sortOption === 'name-desc') {
@@ -494,6 +504,32 @@ export default function TripDashboard() {
       </div>
 
       <div className="p-6 -mt-10 relative z-10 space-y-8">
+        
+        {/* Progress Bar Section */}
+        <div className="brand-panel p-6 shadow-2xl relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-brand-primary/5 rounded-full blur-2xl -mr-16 -mt-16" />
+          <div className="flex justify-between items-end mb-4 relative z-10">
+            <div>
+              <div className="text-[10px] font-black uppercase tracking-widest text-white/40 mb-1">Boarding Progress</div>
+              <div className="text-2xl font-bold font-display text-white">
+                <span className="text-brand-primary">{boardedCount}</span> <span className="text-white/30">/</span> {users.length}
+              </div>
+            </div>
+            <div className="text-right">
+              <div className="text-3xl font-black font-display text-brand-primary drop-shadow-[0_0_10px_rgba(187,255,77,0.3)]">{progressPercent}%</div>
+            </div>
+          </div>
+          <div className="w-full h-2 bg-white/5 rounded-full overflow-hidden relative z-10 border border-white/5">
+            <motion.div 
+              initial={{ width: 0 }}
+              animate={{ width: `${progressPercent}%` }}
+              transition={{ duration: 1, ease: 'easeOut' }}
+              className="h-full bg-brand-primary rounded-full relative"
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent to-white/30" />
+            </motion.div>
+          </div>
+        </div>
         {/* SOS Grid */}
         {users.filter(u => u.sos?.active).length > 0 && (
           <div className="space-y-4">
@@ -548,7 +584,7 @@ export default function TripDashboard() {
               <Users size={18} />
             </div>
             <div className="text-2xl font-black font-display text-white">{users.length}</div>
-            <div className="text-[10px] uppercase tracking-widest text-white/20 font-bold mt-1">Groups</div>
+            <div className="text-[10px] uppercase tracking-widest text-white/20 font-bold mt-1">Passengers</div>
           </div>
           <div className="glass-card p-4 text-center rounded-[28px] border-brand-primary/20 shadow-xl shadow-brand-primary/5">
             <div className="w-10 h-10 bg-brand-primary/10 rounded-xl flex items-center justify-center mb-3 mx-auto text-brand-primary">
@@ -564,6 +600,30 @@ export default function TripDashboard() {
             <div className="text-2xl font-black font-display text-red-400">{missingCount}</div>
             <div className="text-[10px] uppercase tracking-widest text-red-400/40 font-bold mt-1">Missing</div>
           </div>
+        </div>
+
+        {/* Filter Tabs */}
+        <div className="flex overflow-x-auto pb-2 -mx-6 px-6 gap-2 no-scrollbar justify-start sm:justify-center">
+          {[
+            { id: 'all', label: 'All' },
+            { id: 'missing', label: 'Missing' },
+            { id: 'boarded', label: 'Boarded' },
+            { id: 'sos', label: 'SOS Alerts' },
+            { id: 'nophone', label: 'No Phone' }
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setFilterTab(tab.id as any)}
+              className={cn(
+                "whitespace-nowrap px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-all",
+                filterTab === tab.id 
+                  ? "bg-brand-primary text-night-ink" 
+                  : "bg-white/5 text-white/40 hover:bg-white/10 hover:text-white"
+              )}
+            >
+              {tab.label}
+            </button>
+          ))}
         </div>
 
         {/* Actions Bar */}
@@ -952,40 +1012,39 @@ export default function TripDashboard() {
       {/* Embedded Bottom Navigation for TripDashboard */}
       <div className="fixed bottom-6 left-0 right-0 z-50 flex flex-col items-center gap-4 pointer-events-none">
         {admin && (
-          <div className="bg-[#2A2E2B] rounded-full px-4 py-1.5 flex items-center gap-2 text-[10px] font-bold text-[#bbff4d] uppercase tracking-widest border border-white/5 pointer-events-auto">
-            <div className="w-1.5 h-1.5 rounded-full bg-[#bbff4d] animate-pulse shadow-[0_0_8px_rgba(187,255,77,0.8)]" />
+          <div className="brand-panel bg-card-forest !rounded-full px-4 py-1.5 flex items-center gap-2 text-[10px] font-bold text-brand-primary uppercase tracking-widest pointer-events-auto shadow-xl">
+            <div className="w-1.5 h-1.5 rounded-full bg-brand-primary animate-pulse shadow-[0_0_8px_rgba(187,255,77,0.8)]" />
             {admin.username}
           </div>
         )}
-        <nav className="bg-[#2A2E2B] rounded-full px-6 py-3 flex items-center gap-8 shadow-2xl border border-white/5 pointer-events-auto transition-colors duration-300">
-           <Link to="/" className="text-white/50 hover:text-white flex flex-col items-center gap-1 transition-all hover:scale-110">
-             <Home size={20} />
-             <span className="text-[10px] font-medium uppercase tracking-wider">Home</span>
+        <nav className="brand-panel bg-card-forest !rounded-full px-6 py-3 flex items-center gap-6 sm:gap-8 shadow-2xl pointer-events-auto transition-colors duration-300 relative">
+           <Link to="/" className="text-white/40 hover:text-white flex flex-col items-center gap-1 transition-all hover:scale-110 active:scale-95 cursor-pointer">
+             <Home size={22} />
            </Link>
-           <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="text-[#bbff4d] flex flex-col items-center gap-1 scale-110 transition-all cursor-pointer">
-             <MapIcon size={20} />
-             <span className="text-[10px] font-medium uppercase tracking-wider">Map</span>
+           <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="text-white/40 hover:text-white flex flex-col items-center gap-1 transition-all hover:scale-110 active:scale-95 cursor-pointer">
+             <MapIcon size={22} />
            </button>
-           <Link to={`/trip/${tripId}/scanner`} className="text-white/50 hover:text-white flex flex-col items-center gap-1 transition-all hover:scale-110">
-             <ScanLine size={20} />
-             <span className="text-[10px] font-medium uppercase tracking-wider">Scanner</span>
+           
+           <Link to={`/trip/${tripId}/scanner`} className="relative -mt-8 flex flex-col items-center gap-1 transition-all hover:scale-105 active:scale-95 cursor-pointer z-10 mx-2">
+             <div className="w-16 h-16 rounded-full bg-brand-primary text-night-ink flex items-center justify-center shadow-[0_0_30px_rgba(187,255,77,0.4)] border-[6px] border-deep-forest">
+                <ScanLine size={28} />
+             </div>
            </Link>
+           
            <button 
              onClick={requestNotificationPermission}
              className={cn(
-               "flex flex-col items-center gap-1 transition-all hover:scale-110",
-               notificationsEnabled ? 'text-[#bbff4d]' : 'text-white/50 hover:text-white'
+               "flex flex-col items-center gap-1 transition-all hover:scale-110 active:scale-95 cursor-pointer",
+               notificationsEnabled ? 'text-info-sky drop-shadow-[0_0_8px_rgba(56,189,248,0.5)]' : 'text-white/40 hover:text-white'
              )}
            >
-             {notificationsEnabled ? <BellRing size={20} /> : <Bell size={20} />}
-             <span className="text-[10px] font-medium uppercase tracking-wider">Alerts</span>
+             {notificationsEnabled ? <BellRing size={22} /> : <Bell size={22} />}
            </button>
            <button 
              onClick={() => setShowMoreMenu(!showMoreMenu)}
-             className="text-white/50 hover:text-white flex flex-col items-center gap-1 transition-all hover:scale-110"
+             className="text-white/40 hover:text-white flex flex-col items-center gap-1 transition-all hover:scale-110 active:scale-95 cursor-pointer"
            >
-             <MoreVertical size={20} />
-             <span className="text-[10px] font-medium uppercase tracking-wider">Menu</span>
+             <MoreVertical size={22} />
            </button>
         </nav>
       </div>
