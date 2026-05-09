@@ -262,7 +262,7 @@ export default function Home() {
             <div className="flex items-center gap-2">
               <button 
                 onClick={() => setShowMoreMenu(!showMoreMenu)}
-                className="w-12 h-12 rounded-2xl glass flex items-center justify-center transition-all active:scale-90"
+                className="w-12 h-12 rounded-2xl glass flex items-center justify-center transition-all active:scale-90 cursor-pointer"
               >
                 <MoreVertical size={20} className="text-white/60" />
               </button>
@@ -285,7 +285,7 @@ export default function Home() {
                     setShowMoreMenu(false);
                     setShowDeleteConfirm(true);
                   }}
-                  className="flex items-center gap-3 w-full p-4 text-sm text-red-400/70 hover:text-red-400 hover:bg-red-500/10 rounded-2xl transition-colors"
+                  className="flex items-center gap-3 w-full p-4 text-sm text-danger-red hover:text-white hover:bg-danger-red/20 rounded-2xl transition-colors cursor-pointer"
                 >
                   <Trash2 size={18} />
                   <span>Clear All Records</span>
@@ -296,7 +296,7 @@ export default function Home() {
                     setShowMoreMenu(false);
                     logout();
                   }}
-                  className="flex items-center gap-3 w-full p-4 text-sm text-white/40 hover:text-white hover:bg-white/5 rounded-2xl transition-colors"
+                  className="flex items-center gap-3 w-full p-4 text-sm text-white/40 hover:text-white hover:bg-white/5 rounded-2xl transition-colors cursor-pointer"
                 >
                   <LogOut size={18} />
                   <span>Sign Out</span>
@@ -307,18 +307,28 @@ export default function Home() {
         </AnimatePresence>
       
         <div className="w-24 h-24 premium-gradient rounded-[32px] flex items-center justify-center mb-6 shadow-2xl shadow-brand-primary/20 rotate-3">
-          <Mountain className="text-slate-900" size={48} />
+          <Mountain className="text-night-ink" size={48} />
         </div>
         
-        <div className="relative mb-12">
-          <h1 className="text-7xl sm:text-8xl md:text-9xl font-display font-extrabold uppercase tracking-[-0.05em] leading-[0.8] text-transparent bg-clip-text bg-gradient-to-b from-white via-white to-white/10 select-none">
+        <div className="relative mb-6">
+          <h1 className="text-6xl sm:text-7xl md:text-8xl font-display font-extrabold uppercase tracking-[-0.05em] leading-[0.8] text-transparent bg-clip-text bg-gradient-to-b from-white via-white to-white/10 select-none">
             Hillo
           </h1>
         </div>
-        <p className="text-white/40 mb-12 max-w-[280px] text-sm leading-relaxed">
+        
+        {!isAuthenticated && (
+          <div className="flex flex-wrap justify-center gap-2 mb-8">
+            <span className="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-[10px] font-bold text-white/70 uppercase tracking-wider backdrop-blur-sm">QR Boarding</span>
+            <span className="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-[10px] font-bold text-white/70 uppercase tracking-wider backdrop-blur-sm">WhatsApp Tickets</span>
+            <span className="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-[10px] font-bold text-white/70 uppercase tracking-wider backdrop-blur-sm">Live SOS</span>
+            <span className="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-[10px] font-bold text-white/70 uppercase tracking-wider backdrop-blur-sm">No Passenger App Needed</span>
+          </div>
+        )}
+
+        <p className="text-white/60 mb-12 max-w-[320px] text-base leading-relaxed">
           {isAuthenticated 
-            ? "Create a new boarding experience for your next expedition."
-            : "Effortless group trip management with real-time tracking."}
+            ? "Create trips, generate smart tickets, and start boarding instantly."
+            : "Run safer group trips with QR boarding. Create trips, send smart tickets, scan passengers, and respond to SOS alerts in real time."}
         </p>
 
         {isAuthenticated ? (
@@ -326,46 +336,18 @@ export default function Home() {
             <motion.div 
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="glass-card !p-0 overflow-hidden flex flex-col md:flex-row text-left shadow-2xl border-white/5"
+              className="glass-card !p-0 overflow-hidden flex flex-col sm:flex-row text-left shadow-2xl"
             >
-              {/* Left Inset Rail */}
-              <div className="w-full md:w-48 bg-black/40 border-b md:border-b-0 md:border-r border-white/5 flex flex-col items-center justify-center p-8 gap-4 relative overflow-hidden group shadow-[inset_0_2px_20px_rgba(0,0,0,0.3)]">
-                <div className="absolute inset-0 bg-brand-primary/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-                <div className="w-12 h-12 rounded-2xl bg-brand-primary/10 flex items-center justify-center text-brand-primary mb-2 shadow-[0_0_15px_rgba(187,255,77,0.1)]">
-                  <PlusCircle size={24} />
-                </div>
-                <h3 className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em] text-center leading-relaxed">
-                  Expedition<br />Manifest
-                </h3>
-                <div className="absolute bottom-4 left-0 right-0 flex justify-center opacity-10">
-                  <span className="text-[8px] font-black tracking-[1em] uppercase -mr-[1em]">Hillo</span>
-                </div>
-              </div>
-
-              {/* Right Action Panel */}
-              <div className="flex-1 p-8 md:p-10 space-y-6">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h3 className="text-xl font-display font-bold text-white mb-1">Board a New Trip</h3>
-                    <p className="text-xs text-white/30">Initialize the tracking sequence for your group.</p>
-                  </div>
-                  <button 
-                    onClick={() => setShowJoinDialog(true)}
-                    className="flex flex-col items-center gap-1 group"
-                  >
-                    <div className="w-10 h-10 glass rounded-xl flex items-center justify-center text-white/40 group-hover:text-[#bbff4d] group-hover:bg-[#bbff4d]/10 transition-all border border-white/5 group-hover:border-[#bbff4d]/30">
-                      <Key size={18} />
-                    </div>
-                    <span className="text-[8px] font-black uppercase tracking-widest text-white/20 group-hover:text-[#bbff4d]/40">Join via Key</span>
-                  </button>
-                </div>
+              <div className="flex-1 p-6 sm:p-8 space-y-6 relative">
                 
-                <form onSubmit={handleCreateTrip} className="space-y-4">
+                <h3 className="text-xl font-display font-bold text-white">Create New Trip</h3>
+                
+                <form onSubmit={handleCreateTrip} className="space-y-4 relative z-10">
                   <div className="grid grid-cols-1 gap-4">
                     <input
                       type="text"
-                      placeholder="Trip Name"
-                      className="input-field w-full !bg-white/[0.03]"
+                      placeholder="Trip Name (e.g. Alps Expedition)"
+                      className="input-field w-full"
                       value={tripName}
                       onChange={(e) => setTripName(e.target.value)}
                       disabled={loading}
@@ -373,8 +355,8 @@ export default function Home() {
                     />
                     <input
                       type="text"
-                      placeholder="Base Camp / Destination"
-                      className="input-field w-full !bg-white/[0.03]"
+                      placeholder="Destination"
+                      className="input-field w-full"
                       value={destination}
                       onChange={(e) => setDestination(e.target.value)}
                       disabled={loading}
@@ -383,7 +365,7 @@ export default function Home() {
                     <div className="relative group">
                       <input
                         type="date"
-                        className="input-field w-full pr-12 appearance-none cursor-pointer !bg-white/[0.03]"
+                        className="input-field w-full pr-12 appearance-none cursor-pointer"
                         value={tripDate}
                         onChange={(e) => setTripDate(e.target.value)}
                         disabled={loading}
@@ -394,11 +376,11 @@ export default function Home() {
                   </div>
                   <button
                     type="submit"
-                    className="btn-primary w-full flex items-center justify-center gap-3 py-5 mt-4"
+                    className="btn-primary w-full"
                     disabled={loading || !tripName.trim()}
                   >
                     {loading ? (
-                      <div className="w-6 h-6 border-2 border-slate-900/30 border-t-slate-900 rounded-full animate-spin" />
+                      <div className="w-6 h-6 border-2 border-night-ink/30 border-t-night-ink rounded-full animate-spin" />
                     ) : (
                       <>
                         <span className="uppercase tracking-widest font-black text-xs">Launch Tracking</span>
@@ -410,15 +392,28 @@ export default function Home() {
               </div>
             </motion.div>
 
-            <div className="w-full space-y-4 text-left">
-              <h3 className="text-xs font-bold text-white/40 uppercase tracking-widest flex items-center gap-2 pl-2">
+            <button 
+              onClick={() => setShowJoinDialog(true)}
+              className="w-full border border-dashed border-white/20 rounded-[32px] p-6 hover:bg-white/5 transition-colors group cursor-pointer flex flex-col items-center justify-center gap-3"
+            >
+              <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center text-white/40 group-hover:text-brand-primary group-hover:bg-brand-primary/10 transition-all shadow-inner">
+                <Key size={24} />
+              </div>
+              <div className="text-center">
+                <div className="text-sm font-bold text-white group-hover:text-brand-primary transition-colors">Join an Existing Trip</div>
+                <div className="text-[10px] text-white/40 uppercase tracking-widest mt-1">Enter a 6-character partner key</div>
+              </div>
+            </button>
+
+            <div className="w-full space-y-4 text-left pt-4">
+              <h3 className="section-heading flex items-center gap-2 pl-2">
                 <History size={14} />
                 Recent Journeys
               </h3>
 
-              <div className="space-y-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {loadingTrips ? (
-                  <div className="p-12 text-center text-white/10 text-sm italic font-medium animate-pulse">
+                  <div className="p-12 col-span-full text-center text-white/10 text-sm italic font-medium animate-pulse">
                     Retrieving trip logs...
                   </div>
                 ) : recentTrips.length > 0 ? (
@@ -427,33 +422,30 @@ export default function Home() {
                       key={trip.id}
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: idx * 0.1 }}
+                      transition={{ delay: idx * 0.05 }}
                     >
                       <Link 
                         to={`/trip/${trip.id}`}
-                        className="w-full flex items-center justify-between p-5 glass-card rounded-[28px] hover:bg-white/10 transition-all group border-white/5 active:scale-[0.98]"
+                        className="w-full h-full flex flex-col p-5 glass-card !rounded-[28px] hover:bg-white/10 transition-all group !border-white/5 hover:!border-white/10 active:scale-[0.98]"
                       >
-                        <div className="flex items-center gap-4">
-                          <div className="w-12 h-12 bg-brand-primary/10 rounded-2xl flex items-center justify-center text-brand-primary border border-brand-primary/20">
-                            <Mountain size={24} />
+                        <div className="flex items-center gap-3 mb-3">
+                           <div className="w-10 h-10 bg-brand-primary/10 rounded-xl flex items-center justify-center text-brand-primary border border-brand-primary/20 shrink-0">
+                            <Mountain size={20} />
                           </div>
-                          <div className="text-left">
-                            <div className="text-base font-bold text-white mb-0.5 group-hover:text-brand-primary transition-colors">{trip.name}</div>
-                            <div className="text-[10px] text-white/30 flex items-center gap-1.5 uppercase tracking-wider font-bold">
-                              <span>{trip.destination}</span>
-                              <span className="opacity-30">•</span>
-                              <span>{trip.createdAt?.toDate ? new Date(trip.createdAt.toDate()).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : 'LOGGED'}</span>
-                            </div>
-                          </div>
+                          <div className="text-base font-bold text-white group-hover:text-brand-primary transition-colors truncate">{trip.name}</div>
                         </div>
-                        <div className="w-10 h-10 rounded-full flex items-center justify-center bg-white/5 border border-white/10 group-hover:bg-brand-primary group-hover:border-brand-primary transition-all">
-                          <ArrowRight size={18} className="text-white/40 group-hover:text-slate-900 transition-all group-hover:translate-x-0.5" />
+                        <div className="text-[10px] text-white/40 uppercase tracking-wider font-bold mb-2 truncate">
+                          {trip.destination}
+                        </div>
+                        <div className="text-[10px] text-white/20 uppercase tracking-wider font-bold mt-auto flex items-center justify-between">
+                          <span>{trip.createdAt?.toDate ? new Date(trip.createdAt.toDate()).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : 'LOGGED'}</span>
+                          <ArrowRight size={14} className="text-white/20 group-hover:text-brand-primary transition-all group-hover:translate-x-1" />
                         </div>
                       </Link>
                     </motion.div>
                   ))
                 ) : (
-                  <div className="py-12 glass-card rounded-[32px] text-center text-white/20 text-sm border-dashed flex flex-col items-center gap-3">
+                  <div className="py-12 col-span-full glass-card !rounded-[32px] text-center text-white/20 text-sm border-dashed flex flex-col items-center gap-3">
                     <History size={32} className="opacity-10" />
                     <span>Your adventure log is empty.</span>
                   </div>
@@ -462,28 +454,30 @@ export default function Home() {
             </div>
           </div>
         ) : (
-          <div className="w-full space-y-6">
+          <div className="w-full space-y-4 max-w-xs mx-auto pt-4">
             <Link 
-              to="/login"
-              className="btn-primary w-full flex items-center justify-center gap-3 py-5"
+              to="/signup"
+              className="btn-primary w-full"
             >
-              <LogIn size={20} />
-              <span className="text-lg">Authorized Login</span>
+              <PlusCircle size={20} />
+              <span className="text-base tracking-wide">Create Operator Account</span>
             </Link>
             
             <Link 
-              to="/signup"
-              className="btn-glass w-full flex items-center justify-center gap-3 py-5"
+              to="/login"
+              className="btn-glass w-full"
             >
-              <PlusCircle size={20} />
-              <span className="text-lg">Create Account</span>
+              <LogIn size={20} />
+              <span className="text-base tracking-wide">Operator Login</span>
             </Link>
 
-            <div className="pt-4">
-              <p className="text-[10px] text-white/20 uppercase tracking-[0.3em] font-bold">
-                Exclusive Admin Access
-              </p>
-            </div>
+            <Link 
+              to="/showcase"
+              className="btn-secondary !bg-transparent w-full mt-4"
+            >
+              <LayoutDashboard size={20} />
+              <span className="text-sm">View Showcase</span>
+            </Link>
           </div>
         )}
 

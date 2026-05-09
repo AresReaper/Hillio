@@ -353,62 +353,62 @@ export default function UserQR() {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="p-6 pt-12 flex flex-col items-center min-h-screen bg-[#161917] text-white"
+      className="p-6 pt-12 flex flex-col items-center brand-surface w-full"
     >
       <div className="w-full flex justify-center items-center mb-8">
-        <h1 className="text-xl font-bold tracking-tight flex items-center gap-2">
-          <TicketIcon className="text-[#bbff4d]" size={20} />
+        <h1 className="text-xl font-bold font-display tracking-tight flex items-center gap-2">
+          <TicketIcon className="text-brand-primary" size={20} />
           Smart Ticket
         </h1>
       </div>
 
-      <div ref={ticketRef}>
+      <div ref={ticketRef} className="w-full max-w-sm">
         <SmartTicket user={user} trip={trip} qrUrl={qrUrl} />
       </div>
 
       {trip?.tripDate && !isExpired && (
-        <div className="mt-4 flex items-center gap-2 px-4 py-2 bg-[#bbff4d]/10 border border-[#bbff4d]/20 rounded-full">
-          <Clock className="text-[#bbff4d]" size={14} />
-          <span className="text-[10px] font-bold uppercase tracking-widest text-[#bbff4d]/80">
+        <div className="mt-4 flex items-center gap-2 px-4 py-2 bg-brand-primary/10 border border-brand-primary/20 rounded-full">
+          <Clock className="text-brand-primary" size={14} />
+          <span className="text-[10px] font-bold uppercase tracking-widest text-brand-primary/80">
             Valid for: <span className="text-white">{timeLeft}</span>
           </span>
         </div>
       )}
 
       {trip?.destination && (
-        <div className="mt-6 w-full max-w-sm space-y-4">
-          <div className="bg-[#2A2E2B] border border-white/5 rounded-[32px] p-4 text-left shadow-[0_0_50px_rgba(255,255,255,0.02)]">
+        <div className="mt-6 w-full max-w-sm space-y-4 text-left">
+          <div className="brand-panel p-4">
             <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2 text-[#bbff4d] font-bold">
+              <div className="flex items-center gap-2 text-brand-primary font-bold">
                 <MapPin size={18} />
                 <span>Meeting Point</span>
               </div>
               {weather && (
-                <div className="flex items-center gap-1.5 bg-sky-500/10 text-sky-400 px-2.5 py-1 rounded-full text-xs font-bold border border-sky-500/20">
+                <div className="flex items-center gap-1.5 bg-info-sky/10 text-info-sky px-2.5 py-1 rounded-full text-xs font-bold border border-info-sky/20">
                   {weather.condition.includes('Clear') ? <Sun size={14} /> : <Cloud size={14} />}
                   {weather.temp}°C • {weather.condition}
                 </div>
               )}
             </div>
             
-            <div className="rounded-xl overflow-hidden mb-3 border border-white/10">
+            <div className="rounded-xl overflow-hidden mb-3 border border-white/10 relative z-0">
               <LeafletMap address={trip.destination} height="150px" />
             </div>
             <a
               href={`https://www.openstreetmap.org/search?query=${encodeURIComponent(trip.destination)}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="w-full py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-xl text-sm font-medium flex items-center justify-center gap-2 transition-colors"
+              className="btn-glass w-full py-3 text-sm"
             >
               <Navigation size={16} />
               Navigate
             </a>
           </div>
 
-          <div className="bg-[#2A2E2B] border border-white/5 rounded-[32px] overflow-hidden shadow-[0_0_50px_rgba(255,255,255,0.02)] transition-all">
+          <div className="brand-panel overflow-hidden transition-all text-left">
             <button 
               onClick={loadSmartGuide}
-              className="w-full p-4 flex items-center justify-between text-left hover:bg-white/5 transition-colors group"
+              className="w-full p-4 flex items-center justify-between text-left hover:bg-white/5 transition-colors group cursor-pointer"
             >
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-400 group-hover:bg-purple-500 group-hover:text-white transition-all">
@@ -416,7 +416,7 @@ export default function UserQR() {
                 </div>
                 <div>
                   <div className="text-sm font-bold text-white group-hover:text-purple-400 transition-colors">Destination Guide</div>
-                  <div className="text-[10px] text-white/40 uppercase tracking-widest font-black">Quick facts about {trip.destination}</div>
+                  <div className="text-[10px] text-white/40 uppercase tracking-widest font-black mt-0.5">Quick facts about {trip.destination}</div>
                 </div>
               </div>
             </button>
@@ -448,10 +448,9 @@ export default function UserQR() {
           onClick={handleSOS} 
           disabled={sosLoading}
           className={cn(
-            "w-full py-4 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all shadow-lg",
             user?.sos?.active 
-              ? "bg-[#bbff4d]/20 border border-[#bbff4d]/50 text-[#bbff4d]" 
-              : "bg-red-500 hover:bg-red-600 text-white shadow-red-500/20"
+              ? "bg-brand-primary/20 border border-brand-primary/50 text-brand-primary w-full py-4 rounded-[20px] font-bold flex items-center justify-center gap-2 transition-all cursor-pointer" 
+              : "btn-danger w-full"
           )}
         >
           {sosLoading ? (
@@ -469,18 +468,18 @@ export default function UserQR() {
           )}
         </button>
 
-        <button onClick={handleShare} className="w-full py-4 bg-white hover:bg-gray-100 text-[#161917] rounded-2xl font-bold flex items-center justify-center gap-2 transition-all cursor-pointer">
+        <button onClick={handleShare} className="btn-secondary w-full !bg-white/10 hover:!bg-white/20">
           <Share2 size={18} />
           Share Ticket
         </button>
-        <p className="text-[10px] text-white/20 leading-relaxed text-center px-8">
+        <p className="text-[10px] text-white/30 leading-relaxed text-center px-8 mt-4 font-medium">
           This is your unique boarding pass. Please keep it ready for scanning at the meeting point.
         </p>
 
         {/* Sponsor / Ad Banner Space */}
-        <div className="w-full mt-6 bg-[#2A2E2B] border border-white/5 rounded-[24px] p-4 text-center">
-          <div className="text-[10px] text-white/30 uppercase tracking-widest mb-2">Advertisement / Sponsored</div>
-          <a href="#" className="block w-full h-20 bg-white/5 rounded-xl border-2 border-dashed border-white/10 hover:bg-white/10 transition-colors flex items-center justify-center flex-col">
+        <div className="w-full mt-8 brand-panel p-4 text-center border-dashed">
+          <div className="text-[10px] text-white/30 uppercase tracking-widest mb-2 font-bold">Sponsored</div>
+          <a href="#" className="block w-full h-20 bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 transition-colors flex items-center justify-center flex-col shadow-inner">
             <span className="text-white/60 font-bold text-sm">Your Ad Here</span>
             <span className="text-white/40 text-[10px] mt-1">Contact admin to place an ad</span>
           </a>

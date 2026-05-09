@@ -1,19 +1,19 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Link, useLocation, Navigate } from 'react-router-dom';
-import { Home as HomeIcon, QrCode, LayoutDashboard, ScanLine, LogOut } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
-import Home from './pages/Home';
-import TripDashboard from './pages/TripDashboard';
-import JoinTrip from './pages/JoinTrip';
-import UserQR from './pages/UserQR';
-import Scanner from './pages/Scanner';
-import UniversalScanner from './pages/UniversalScanner';
-import AdminLogin from './pages/AdminLogin';
-import Signup from './pages/Signup';
-import LandingPage from './showcase/LandingPage';
-import ShortLinkRedirect from './pages/ShortLinkRedirect';
 import { AdminAuthProvider, useAdminAuth } from './context/AdminAuthContext';
 import { cn } from './lib/utils';
+
+// Lazy loading heavy routes
+const Home = React.lazy(() => import('./pages/Home'));
+const TripDashboard = React.lazy(() => import('./pages/TripDashboard'));
+const JoinTrip = React.lazy(() => import('./pages/JoinTrip'));
+const UserQR = React.lazy(() => import('./pages/UserQR'));
+const Scanner = React.lazy(() => import('./pages/Scanner'));
+const UniversalScanner = React.lazy(() => import('./pages/UniversalScanner'));
+const AdminLogin = React.lazy(() => import('./pages/AdminLogin'));
+const Signup = React.lazy(() => import('./pages/Signup'));
+const LandingPage = React.lazy(() => import('./showcase/LandingPage'));
+const ShortLinkRedirect = React.lazy(() => import('./pages/ShortLinkRedirect'));
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAdminAuth();
@@ -26,35 +26,34 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
-function Navigation() {
-  const location = useLocation();
-  const { isAuthenticated, logout, admin } = useAdminAuth();
-  const isTripPage = location.pathname.includes('/trip/') && !location.pathname.includes('/user/') && !location.pathname.includes('/join') && !location.pathname.includes('/scanner');
-  const isUserPage = location.pathname.includes('/user/') || location.pathname.includes('/join');
-  const isShowcase = location.pathname === '/showcase';
-  const isScannerPage = location.pathname.includes('/scanner') || location.pathname === '/scan';
-
-  // Do not show global navigation heavily inside TripDashboard or Scanner,
-  // TripDashboard will render its own custom bottom navigation to handle map viewing.
-  if (isTripPage || isUserPage || isShowcase || isScannerPage) return null;
-
-  return (
-    <div className="fixed bottom-6 left-0 right-0 z-50 flex flex-col items-center gap-4 pointer-events-none">
-      {/* Global simple nav for non-trip pages if needed, otherwise empty */}
-    </div>
-  );
-}
+// Fallback spinner
+const PageLoader = () => (
+  <div className="min-h-[50vh] flex items-center justify-center">
+    <div className="w-8 h-8 rounded-full border-2 border-brand-primary/20 border-t-brand-primary animate-spin" />
+  </div>
+);
 
 function AppRoutes() {
   const location = useLocation();
   const isShowcase = location.pathname === '/showcase';
+  const isTripDashboard = location.pathname.match(/^\/trip\/[^/]+$/) !== null;
+  const isPassengerView = location.pathname.includes('/user/') || location.pathname.includes('/scan') || location.pathname.includes('/join');
+  
+  // Set layout constraints based on page type
+  let layoutClass = "min-h-screen relative pb-24 mx-auto w-full";
+  if (!isShowcase) {
+    if (isTripDashboard) {
+      layoutClass += " max-w-6xl"; // Wide layout for dashboard
+    } else if (isPassengerView) {
+      layoutClass += " max-w-md"; // Narrow mobile-first layout
+    } else {
+      layoutClass += " max-w-4xl"; // Moderate admin layout
+    }
+  }
 
   return (
-    <div className={cn(
-      "min-h-screen relative pb-24",
-      !isShowcase && "max-w-md mx-auto"
-    )}>
-      <AnimatePresence mode="wait">
+    <div className={layoutClass}>
+      <Suspense fallback={<PageLoader />}>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/s/:shortId" element={<ShortLinkRedirect />} />
@@ -75,8 +74,7 @@ function AppRoutes() {
             </ProtectedRoute>
           } />
         </Routes>
-      </AnimatePresence>
-      <Navigation />
+      </Suspense>
     </div>
   );
 }
