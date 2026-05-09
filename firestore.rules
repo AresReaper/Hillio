@@ -82,9 +82,9 @@ service cloud.firestore {
       allow delete: if isSignedIn() && resource.data.creatorId == request.auth.uid;
 
       match /users/{userId} {
-        allow get: if true;
+        allow get, list: if true;
         allow create: if isValidUser(request.resource.data);
-        allow list, delete: if isAdmin(get(/databases/$(database)/documents/trips/$(tripId)).data);
+        allow delete: if isAdmin(get(/databases/$(database)/documents/trips/$(tripId)).data);
         
         allow update: if isAdmin(get(/databases/$(database)/documents/trips/$(tripId)).data) || 
                        (isSignedIn() && request.resource.data.diff(resource.data).affectedKeys().hasAny(['sos', 'status', 'boardedAt']));

@@ -85,6 +85,13 @@ export default function AccessHub({ trip, onClose }: AccessHubProps) {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const copyTrackingId = () => {
+    if (!trip.trackingId) return;
+    navigator.clipboard.writeText(trip.trackingId);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+  
   return (
     <div className="fixed inset-0 z-[110] flex items-center justify-center p-6">
       <motion.div
@@ -124,6 +131,19 @@ export default function AccessHub({ trip, onClose }: AccessHubProps) {
         </div>
 
         <div className="p-8">
+          {trip.trackingId && (
+            <div className="mb-6 p-4 brand-panel border-brand-primary/20 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4 justify-center text-center sm:text-left">
+              <div>
+                <div className="text-[10px] text-white/40 uppercase tracking-widest font-bold mb-1">Public Tracking ID</div>
+                <div className="text-lg font-black font-display tracking-widest text-[#bbff4d] select-all">{trip.trackingId}</div>
+              </div>
+              <button onClick={copyTrackingId} className="flex shrink-0 items-center gap-2 px-4 py-2 border border-[#bbff4d]/30 text-[#bbff4d] rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-[#bbff4d] hover:text-black transition-all">
+                {copied ? <Check size={14} /> : <Copy size={14} />}
+                {copied ? 'Copied' : 'Copy'}
+              </button>
+            </div>
+          )}
+          
           <AnimatePresence mode="wait">
             {activeTab === 'invite' ? (
               <motion.div

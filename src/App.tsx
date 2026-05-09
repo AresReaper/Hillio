@@ -14,6 +14,7 @@ const AdminLogin = React.lazy(() => import('./pages/AdminLogin'));
 const Signup = React.lazy(() => import('./pages/Signup'));
 const LandingPage = React.lazy(() => import('./showcase/LandingPage'));
 const ShortLinkRedirect = React.lazy(() => import('./pages/ShortLinkRedirect'));
+const TrackTrip = React.lazy(() => import('./pages/TrackTrip'));
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAdminAuth();
@@ -41,7 +42,7 @@ function AppRoutes() {
   
   // Set layout constraints based on page type
   let layoutClass = "min-h-screen relative pb-24 mx-auto w-full";
-  if (!isShowcase) {
+  if (!isShowcase && !location.pathname.startsWith('/track')) {
     if (isTripDashboard) {
       layoutClass += " max-w-6xl"; // Wide layout for dashboard
     } else if (isPassengerView) {
@@ -60,6 +61,8 @@ function AppRoutes() {
           <Route path="/login" element={<AdminLogin />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/showcase" element={<LandingPage />} />
+          <Route path="/track" element={<TrackTrip />} />
+          <Route path="/track/:trackingId" element={<TrackTrip />} />
           <Route path="/scan" element={<UniversalScanner />} />
           <Route path="/trip/:tripId" element={
             <ProtectedRoute>

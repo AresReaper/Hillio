@@ -10,6 +10,8 @@ export interface Trip {
   createdBy: string;
   admins?: string[];
   accessKey?: string;
+  trackingId?: string;
+  trackingIdNormalized?: string;
 }
 
 export interface User {

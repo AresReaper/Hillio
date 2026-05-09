@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { collection, addDoc, serverTimestamp, Timestamp, query, orderBy, limit, onSnapshot, getDocs, writeBatch, deleteDoc, where, updateDoc, arrayUnion } from 'firebase/firestore';
 import { db, handleFirestoreError, OperationType } from '../lib/firebase';
-import { Mountain, ArrowRight, ScanLine, ShieldCheck, LogIn, Calendar, LogOut, MoreVertical, PlusCircle, LayoutDashboard, History, Clock, Trash2, AlertTriangle, CheckCircle2, Key } from 'lucide-react';
+import { Mountain, ArrowRight, ScanLine, ShieldCheck, LogIn, Calendar, LogOut, MoreVertical, PlusCircle, LayoutDashboard, History, Clock, Trash2, AlertTriangle, CheckCircle2, Key, Search } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Link } from 'react-router-dom';
 import { useAdminAuth } from '../context/AdminAuthContext';
@@ -167,13 +167,22 @@ export default function Home() {
 
     setLoading(true);
     try {
+      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+      let r = '';
+      for (let i = 0; i < 6; i++) {
+          r += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      const generatedTrackingId = `HLO-${r}`;
+      
       const docRef = await addDoc(collection(db, 'trips'), {
         name: tripName,
         destination: destination.trim(),
         tripDate: tripDate ? Timestamp.fromDate(new Date(tripDate)) : null,
         createdAt: serverTimestamp(),
         createdBy: admin?.username || 'unknown',
-        creatorId: admin?.uid
+        creatorId: admin?.uid,
+        trackingId: generatedTrackingId,
+        trackingIdNormalized: generatedTrackingId.replace(/[^A-Z0-9]/ig, '').toUpperCase()
       });
       navigate(`/trip/${docRef.id}`);
     } catch (error) {
@@ -472,11 +481,19 @@ export default function Home() {
             </Link>
 
             <Link 
+              to="/track"
+              className="btn-glass w-full mt-4"
+            >
+              <Search size={20} />
+              <span className="text-base tracking-wide">Track a Trip</span>
+            </Link>
+
+            <Link 
               to="/showcase"
               className="btn-secondary !bg-transparent w-full mt-4"
             >
               <LayoutDashboard size={20} />
-              <span className="text-sm">View Showcase</span>
+              <span className="text-sm">Verandan Text</span>
             </Link>
           </div>
         )}
