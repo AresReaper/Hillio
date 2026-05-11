@@ -168,8 +168,46 @@ export default function UserQR() {
     };
   }, [tripId, userId]);
 
-  if (loading) return <div className="p-6 text-center text-white/50">Loading your smart ticket...</div>;
-  if (!user) return <div className="p-6 text-center text-white/50">User not found.</div>;
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#020617] flex flex-col items-center justify-center p-6 text-center relative overflow-hidden">
+        {/* Background glow */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-[#bbff4d]/10 blur-[100px] rounded-full pointer-events-none" />
+        
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          className="relative z-10 flex flex-col items-center"
+        >
+          <div className="w-20 h-20 bg-[#bbff4d]/10 border border-[#bbff4d]/20 rounded-3xl flex items-center justify-center mb-8">
+             <TicketIcon className="text-[#bbff4d]" size={40} />
+          </div>
+          <h1 className="text-6xl font-bold tracking-tighter text-[#bbff4d] mb-4 font-display">Hillo.</h1>
+          <p className="text-white/60 mb-12 text-sm max-w-[280px] leading-relaxed italic">
+            "The journey of a thousand miles begins with a single step."
+          </p>
+          <div className="flex flex-col items-center gap-3">
+             <div className="w-6 h-6 border-2 border-[#bbff4d]/20 border-t-[#bbff4d] rounded-full animate-spin" />
+             <div className="text-[10px] text-[#bbff4d]/50 uppercase tracking-widest font-mono">
+               Preparing your Smart Ticket...
+             </div>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-[#020617] flex items-center justify-center p-6 text-center">
+        <div className="glass-card p-10 max-w-sm w-full mx-auto border-red-500/30">
+          <h1 className="text-xl font-bold text-red-400 mb-2">Invalid Ticket</h1>
+          <p className="text-white/60">This ticket could not be found or you do not have permission to view it.</p>
+        </div>
+      </div>
+    );
+  }
 
   const isExpired = trip?.tripDate ? (new Date().getTime() > trip.tripDate.toDate().getTime() + (24 * 60 * 60 * 1000)) : false;
 

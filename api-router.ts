@@ -1,15 +1,26 @@
 import express from 'express';
 import QRCode from 'qrcode';
-import { Resend } from 'resend';
+import nodemailer from 'nodemailer';
 
 export const apiRouter = express.Router();
 
-let resendClient: Resend | null = null;
-function getResend() {
-  if (!resendClient && process.env.RESEND_API_KEY) {
-    resendClient = new Resend(process.env.RESEND_API_KEY);
+let transporter: nodemailer.Transporter | null = null;
+function getTransporter() {
+  const user = process.env.SMTP_USER;
+  const pass = process.env.SMTP_PASS;
+  
+  // Basic check: if SMTP isn't setup, we'll return null to skip notifications
+  // For most users avoiding custom domains, Gmail + App Passwords is the best route.
+  if (!transporter && user && pass) {
+    const port = Number(process.env.SMTP_PORT) || 465;
+    transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST || 'smtp.gmail.com',
+      port: port,
+      secure: port === 465, // true for 465, false for other ports
+      auth: { user, pass }
+    });
   }
-  return resendClient;
+  return transporter;
 }
 
 apiRouter.get('/qr/:tripId/:userId', async (req, res) => {
@@ -118,13 +129,13 @@ apiRouter.post('/notify', async (req, res) => {
       appUrl = `https://${process.env.VERCEL_URL}`;
     }
     
-    const resendClient = getResend();
+    const transporter = getTransporter();
 
-    if (!resendClient) {
+    if (!transporter) {
       return res.json({ 
         success: true, 
         missingKeys: true, 
-        message: 'Resend API key is not configured. Email notifications skipped.' 
+        message: 'SMTP credentials are not configured. Email notifications skipped.' 
       });
     }
 
@@ -135,29 +146,46 @@ apiRouter.post('/notify', async (req, res) => {
       const passUrl = `${appUrl}/trip/${user.tripId}/user/${user.id}`;
       let notified = false;
 
-      if (user.email && resendClient) {
+      if (user.email && transporter) {
         try {
-          await resendClient.emails.send({
-            from: 'onboarding@resend.dev',
+          const info = await transporter.sendMail({
+            from: process.env.SMTP_FROM || '"Hillo App" <hello@trip.com>',
             to: user.email,
-            subject: `Your Boarding Pass for ${tripName}`,
+            subject: `Your Boarding Pass for ${tripName} is Ready`,
             html: `
-              <div style="font-family: sans-serif; text-align: center; color: #333;">
-                <h2>Hi ${user.name},</h2>
-                <p>Here is your boarding pass for <strong>${tripName}</strong>.</p>
-                <img src="${qrUrl}" alt="QR Code" style="width: 250px; height: 250px; border-radius: 16px; margin: 20px 0;" />
-                <p>Please present this QR code when boarding.</p>
-                <p>Or view it online: <a href="${passUrl}" style="color: #064e3b;">View Pass</a></p>
+              <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #020617; color: #ffffff; padding: 40px; border-radius: 24px;">
+                <div style="text-align: center; margin-bottom: 30px;">
+                  <h1 style="color: #bbff4d; margin: 0; font-size: 32px; letter-spacing: -1px;">Hillo.</h1>
+                  <p style="color: rgba(255,255,255,0.6); margin-top: 5px; font-size: 14px; text-transform: uppercase; letter-spacing: 2px;">Smart Ticket System</p>
+                </div>
+                
+                <div style="background-color: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 30px; text-align: center;">
+                  <h2 style="margin-top: 0; font-size: 24px;">Hi ${user.name},</h2>
+                  <p style="color: rgba(255,255,255,0.8); line-height: 1.6; margin-bottom: 30px;">
+                    Your boarding pass for <strong>${tripName}</strong> is ready. Click the button below to view your live Smart Ticket with real-time updates and QR boarding.
+                  </p>
+                  
+                  <a href="${passUrl}" style="display: inline-block; background-color: #bbff4d; color: #020617; text-decoration: none; font-weight: bold; padding: 16px 32px; border-radius: 12px; font-size: 16px; text-transform: uppercase; letter-spacing: 1px;">
+                    View Live Ticket
+                  </a>
+                </div>
+                
+                <div style="text-align: center; margin-top: 30px; color: rgba(255,255,255,0.4); font-size: 12px;">
+                  <p>Powered by Hillo Track • Seamless Tour Logistics</p>
+                </div>
               </div>
             `
           });
+          
           notified = true;
-        } catch (e) {
-          console.error(`Resend error for ${user.email}:`, e);
+          results.push({ id: user.id, notified });
+        } catch (e: any) {
+          console.error(`Nodemailer error for ${user.email}:`, e);
+          results.push({ id: user.id, notified: false, error: e.message || String(e) });
         }
+      } else {
+        results.push({ id: user.id, notified: false, error: 'No email provided' });
       }
-
-      results.push({ id: user.id, notified });
     }
 
     res.json({ success: true, results });

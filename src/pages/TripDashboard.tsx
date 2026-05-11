@@ -39,6 +39,7 @@ export default function TripDashboard() {
   const [showAccessHub, setShowAccessHub] = useState(false);
   const [manualName, setManualName] = useState('');
   const [manualPhone, setManualPhone] = useState('');
+  const [manualEmail, setManualEmail] = useState('');
   const [isAddingManual, setIsAddingManual] = useState(false);
   const [sortOption, setSortOption] = useState<'name-asc' | 'name-desc' | 'status'>('name-asc');
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -84,14 +85,41 @@ export default function TripDashboard() {
 
     setIsAddingManual(true);
     try {
-      await addDoc(collection(db, 'trips', tripId, 'users'), {
+      const docRef = await addDoc(collection(db, 'trips', tripId, 'users'), {
         name: manualName.trim(),
         phone: manualPhone.trim(),
+        email: manualEmail.trim(),
         status: 'Not Boarded',
         joinedAt: serverTimestamp(),
       });
+      
+      const newUsers = [{
+        id: docRef.id,
+        name: manualName.trim(),
+        phone: manualPhone.trim(),
+        email: manualEmail.trim(),
+        tripId
+      }];
+
+      if (manualEmail.trim()) {
+        try {
+          const res = await fetch('/api/notify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ users: newUsers, tripName: trip?.name || 'Your Trip' })
+          });
+          const result = await res.json();
+          if (result.results && result.results[0]?.error) {
+            alert(`Passenger added, but email failed: ${result.results[0].error}`);
+          }
+        } catch (e) {
+          console.error("Failed to send notification:", e);
+        }
+      }
+
       setManualName('');
       setManualPhone('');
+      setManualEmail('');
       setShowManualAdd(false);
     } catch (error) {
       console.error('Error adding passenger:', error);
@@ -403,9 +431,14 @@ export default function TripDashboard() {
       const skippedMsg = skippedCount > 0 ? `\n\nSkipped ${skippedCount} duplicate users.` : '';
 
       if (result.missingKeys) {
-        alert(`Successfully imported ${newUsers.length} new users!${skippedMsg}\n\nNote: Automatic Email notifications were skipped because Resend API key is not configured. You can use the WhatsApp button next to each user to send their pass manually.`);
+        alert(`Successfully imported ${newUsers.length} new users!${skippedMsg}\n\nNote: Automatic Email notifications were skipped because SMTP credentials are not configured.`);
       } else {
-        alert(`Successfully imported ${newUsers.length} new users!${skippedMsg}\n\nYou can use the green WhatsApp button next to each user to send their pass manually using your own WhatsApp.`);
+        const errors = result.results?.filter((r: any) => r.error) || [];
+        if (errors.length > 0) {
+          alert(`Successfully imported ${newUsers.length} new users!${skippedMsg}\n\nWARNING: ${errors.length} emails failed to send. Example error: ${errors[0].error}`);
+        } else {
+          alert(`Successfully imported ${newUsers.length} new users!${skippedMsg}\n\nEmails sent successfully to passengers with configured email addresses.`);
+        }
       }
     } catch (error) {
       console.error('Excel import error:', error);
@@ -695,6 +728,13 @@ export default function TripDashboard() {
                     className="input-field w-full"
                     value={manualPhone}
                     onChange={(e) => setManualPhone(e.target.value)}
+                  />
+                  <input
+                    type="email"
+                    placeholder="Email Address"
+                    className="input-field w-full"
+                    value={manualEmail}
+                    onChange={(e) => setManualEmail(e.target.value)}
                   />
                 </div>
                 <div className="flex gap-3">
