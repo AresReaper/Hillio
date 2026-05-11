@@ -117,6 +117,14 @@ apiRouter.get('/shorten', async (req, res) => {
   }
 });
 
+apiRouter.get('/env-debug', (req, res) => {
+  res.json({
+    keys: Object.keys(process.env).filter(k => k.startsWith('SMTP')),
+    verceLEnv: process.env.VERCEL_ENV,
+    url: process.env.VERCEL_URL
+  });
+});
+
 apiRouter.post('/notify', async (req, res) => {
   try {
     const { users, tripName } = req.body;

@@ -110,9 +110,11 @@ export default function TripDashboard() {
           });
           const result = await res.json();
           if (result.missingKeys) {
-            alert(`Passenger added, but email skipped. SMTP credentials missing.\nDebug Info:\nUser Configured: ${result.debug?.SMTP_USER_present}\nPass Configured: ${result.debug?.SMTP_PASS_present}`);
+            alert(`Passenger added successfully, but email skipped because SMTP credentials are missing.\n\nDebug Info:\nSMTP_USER Configured: ${result.debug?.SMTP_USER_present}\nSMTP_PASS Configured: ${result.debug?.SMTP_PASS_present}`);
           } else if (result.results && result.results[0]?.error) {
             alert(`Passenger added, but email failed: ${result.results[0].error}`);
+          } else {
+            alert(`Passenger added successfully! Email notification sent.`);
           }
         } catch (e) {
           console.error("Failed to send notification:", e);
