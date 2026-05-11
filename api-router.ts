@@ -135,7 +135,13 @@ apiRouter.post('/notify', async (req, res) => {
       return res.json({ 
         success: true, 
         missingKeys: true, 
-        message: 'SMTP credentials are not configured. Email notifications skipped.' 
+        message: 'SMTP credentials are not configured.',
+        debug: {
+           SMTP_USER_present: !!process.env.SMTP_USER,
+           SMTP_PASS_present: !!process.env.SMTP_PASS,
+           SMTP_HOST_present: !!process.env.SMTP_HOST,
+           SMTP_PORT_present: !!process.env.SMTP_PORT
+        }
       });
     }
 

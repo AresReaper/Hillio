@@ -109,7 +109,9 @@ export default function TripDashboard() {
             body: JSON.stringify({ users: newUsers, tripName: trip?.name || 'Your Trip' })
           });
           const result = await res.json();
-          if (result.results && result.results[0]?.error) {
+          if (result.missingKeys) {
+            alert(`Passenger added, but email skipped. SMTP credentials missing.\nDebug Info:\nUser Configured: ${result.debug?.SMTP_USER_present}\nPass Configured: ${result.debug?.SMTP_PASS_present}`);
+          } else if (result.results && result.results[0]?.error) {
             alert(`Passenger added, but email failed: ${result.results[0].error}`);
           }
         } catch (e) {
@@ -431,7 +433,7 @@ export default function TripDashboard() {
       const skippedMsg = skippedCount > 0 ? `\n\nSkipped ${skippedCount} duplicate users.` : '';
 
       if (result.missingKeys) {
-        alert(`Successfully imported ${newUsers.length} new users!${skippedMsg}\n\nNote: Automatic Email notifications were skipped because SMTP credentials are not configured.`);
+        alert(`Successfully imported ${newUsers.length} new users!${skippedMsg}\n\nNote: Automatic Email notifications were skipped because SMTP credentials are not configured.\n\nDebug Info: \nUser Configured: ${result.debug?.SMTP_USER_present}\nPass Configured: ${result.debug?.SMTP_PASS_present}`);
       } else {
         const errors = result.results?.filter((r: any) => r.error) || [];
         if (errors.length > 0) {
