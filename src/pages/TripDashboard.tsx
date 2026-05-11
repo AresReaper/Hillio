@@ -116,8 +116,9 @@ export default function TripDashboard() {
           } else {
             alert(`Passenger added successfully! Email notification sent.`);
           }
-        } catch (e) {
+        } catch (e: any) {
           console.error("Failed to send notification:", e);
+          alert(`Passenger added, but failed to send email. Error: ${e.message || 'Unknown error'}`);
         }
       }
 
@@ -424,25 +425,30 @@ export default function TripDashboard() {
       setImportStatus('Sending QR codes via Email...');
       
       // Call backend to send notifications
-      const response = await fetch('/api/notify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ users: newUsers, tripName: trip.name })
-      });
-      
-      const result = await response.json();
-      
-      const skippedMsg = skippedCount > 0 ? `\n\nSkipped ${skippedCount} duplicate users.` : '';
+      try {
+        const response = await fetch('/api/notify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ users: newUsers, tripName: trip.name })
+        });
+        
+        const result = await response.json();
+        
+        const skippedMsg = skippedCount > 0 ? `\n\nSkipped ${skippedCount} duplicate users.` : '';
 
-      if (result.missingKeys) {
-        alert(`Successfully imported ${newUsers.length} new users!${skippedMsg}\n\nNote: Automatic Email notifications were skipped because SMTP credentials are not configured.\n\nDebug Info: \nUser Configured: ${result.debug?.SMTP_USER_present}\nPass Configured: ${result.debug?.SMTP_PASS_present}`);
-      } else {
-        const errors = result.results?.filter((r: any) => r.error) || [];
-        if (errors.length > 0) {
-          alert(`Successfully imported ${newUsers.length} new users!${skippedMsg}\n\nWARNING: ${errors.length} emails failed to send. Example error: ${errors[0].error}`);
+        if (result.missingKeys) {
+          alert(`Successfully imported ${newUsers.length} new users!${skippedMsg}\n\nNote: Automatic Email notifications were skipped because SMTP credentials are not configured.\n\nDebug Info: \nUser Configured: ${result.debug?.SMTP_USER_present}\nPass Configured: ${result.debug?.SMTP_PASS_present}`);
         } else {
-          alert(`Successfully imported ${newUsers.length} new users!${skippedMsg}\n\nEmails sent successfully to passengers with configured email addresses.`);
+          const errors = result.results?.filter((r: any) => r.error) || [];
+          if (errors.length > 0) {
+            alert(`Successfully imported ${newUsers.length} new users!${skippedMsg}\n\nWARNING: ${errors.length} emails failed to send. Example error: ${errors[0].error}`);
+          } else {
+            alert(`Successfully imported ${newUsers.length} new users!${skippedMsg}\n\nEmails sent successfully to passengers with configured email addresses.`);
+          }
         }
+      } catch (notifyError: any) {
+        console.error('Email notification error:', notifyError);
+        alert(`Successfully imported ${newUsers.length} new users! However, email notifications could not be sent. Error: ${notifyError.message}`);
       }
     } catch (error) {
       console.error('Excel import error:', error);

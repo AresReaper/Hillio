@@ -12,12 +12,18 @@ function getTransporter() {
   // Basic check: if SMTP isn't setup, we'll return null to skip notifications
   // For most users avoiding custom domains, Gmail + App Passwords is the best route.
   if (!transporter && user && pass) {
-    const port = Number(process.env.SMTP_PORT) || 465;
+    const port = Number(process.env.SMTP_PORT) || 587;
     transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST || 'smtp.gmail.com',
       port: port,
-      secure: port === 465, // true for 465, false for other ports
-      auth: { user, pass }
+      secure: port === 465, // true for 465 (SMTPS), false for 587 (STARTTLS)
+      auth: { user, pass },
+      connectionTimeout: 8000,
+      greetingTimeout: 8000,
+      socketTimeout: 8000,
+      tls: {
+        rejectUnauthorized: false
+      }
     });
   }
   return transporter;
