@@ -3,7 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { doc, collection, onSnapshot, query, orderBy, addDoc, setDoc, serverTimestamp, deleteDoc, getDocs, writeBatch, updateDoc } from 'firebase/firestore';
 import { db, handleFirestoreError, OperationType } from '../lib/firebase';
 import { Trip, User } from '../types';
-import { Users, CheckCircle2, XCircle, Share2, FileUp, MapPin, MessageCircle, Bell, BellRing, Trash2, PlusCircle, LogOut, AlertTriangle, Calendar, MoreVertical, ScanLine, ShieldCheck, Home, Map as MapIcon, Sun, Moon, Phone } from 'lucide-react';
+import { Users, CheckCircle2, XCircle, Share2, FileUp, MapPin, MessageCircle, Mail, Bell, BellRing, Trash2, PlusCircle, LogOut, AlertTriangle, Calendar, MoreVertical, ScanLine, ShieldCheck, Home, Map as MapIcon, Sun, Moon, Phone } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import * as XLSX from 'xlsx';
 import { cn } from '../lib/utils';
@@ -39,7 +39,9 @@ export default function TripDashboard() {
   const [showAccessHub, setShowAccessHub] = useState(false);
   const [manualName, setManualName] = useState('');
   const [manualPhone, setManualPhone] = useState('');
+  const [manualEmail, setManualEmail] = useState('');
   const [isAddingManual, setIsAddingManual] = useState(false);
+  const [emailingUserId, setEmailingUserId] = useState<string | null>(null);
   const [sortOption, setSortOption] = useState<'name-asc' | 'name-desc' | 'status'>('name-asc');
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [notificationsEnabled, setNotificationsEnabled] = useState(
@@ -87,11 +89,13 @@ export default function TripDashboard() {
       await addDoc(collection(db, 'trips', tripId, 'users'), {
         name: manualName.trim(),
         phone: manualPhone.trim(),
+        email: manualEmail.trim().toLowerCase(),
         status: 'Not Boarded',
         joinedAt: serverTimestamp(),
       });
       setManualName('');
       setManualPhone('');
+      setManualEmail('');
       setShowManualAdd(false);
     } catch (error) {
       console.error('Error adding passenger:', error);
@@ -168,6 +172,47 @@ export default function TripDashboard() {
     });
     
     return shortId;
+  };
+
+  const sendTicketEmail = async (user: User) => {
+    if (!trip || !tripId || !user.email || emailingUserId) return;
+
+    setEmailingUserId(user.id);
+    try {
+      const response = await fetch('/api/notify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tripName: trip.name,
+          destination: trip.destination,
+          users: [{
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            tripId,
+          }],
+        }),
+      });
+
+      const result = await response.json();
+
+      if (result.missingKeys) {
+        alert('Email was not sent because Resend API key is not configured.');
+        return;
+      }
+
+      const sent = result.results?.[0]?.notified;
+      if (!response.ok || !sent) {
+        throw new Error(result.error || 'Email provider did not confirm delivery.');
+      }
+
+      alert(`Live ticket email sent to ${user.email}.`);
+    } catch (error) {
+      console.error('Ticket email failed:', error);
+      alert('Failed to send the live ticket email. Please try again.');
+    } finally {
+      setEmailingUserId(null);
+    }
   };
 
   const shareToWhatsApp = async (user: User) => {
@@ -389,13 +434,13 @@ export default function TripDashboard() {
         });
       }
 
-      setImportStatus('Sending QR codes via Email...');
+      setImportStatus('Sending branded live ticket emails...');
       
       // Call backend to send notifications
       const response = await fetch('/api/notify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ users: newUsers, tripName: trip.name })
+        body: JSON.stringify({ users: newUsers, tripName: trip.name, destination: trip.destination })
       });
       
       const result = await response.json();
@@ -403,9 +448,9 @@ export default function TripDashboard() {
       const skippedMsg = skippedCount > 0 ? `\n\nSkipped ${skippedCount} duplicate users.` : '';
 
       if (result.missingKeys) {
-        alert(`Successfully imported ${newUsers.length} new users!${skippedMsg}\n\nNote: Automatic Email notifications were skipped because Resend API key is not configured. You can use the WhatsApp button next to each user to send their pass manually.`);
+        alert(`Successfully imported ${newUsers.length} new users!${skippedMsg}\n\nNote: Automatic email notifications were skipped because Resend API key is not configured. You can still use WhatsApp or copy the live ticket link manually.`);
       } else {
-        alert(`Successfully imported ${newUsers.length} new users!${skippedMsg}\n\nYou can use the green WhatsApp button next to each user to send their pass manually using your own WhatsApp.`);
+        alert(`Successfully imported ${newUsers.length} new users!${skippedMsg}\n\nBranded live ticket emails were sent to passengers with email addresses. You can still use WhatsApp for phone-only passengers.`);
       }
     } catch (error) {
       console.error('Excel import error:', error);
@@ -696,6 +741,13 @@ export default function TripDashboard() {
                     value={manualPhone}
                     onChange={(e) => setManualPhone(e.target.value)}
                   />
+                  <input
+                    type="email"
+                    placeholder="Email for live ticket"
+                    className="input-field w-full"
+                    value={manualEmail}
+                    onChange={(e) => setManualEmail(e.target.value)}
+                  />
                 </div>
                 <div className="flex gap-3">
                   <button type="submit" disabled={isAddingManual} className="btn-primary flex-1 py-4">
@@ -790,7 +842,7 @@ export default function TripDashboard() {
                     </div>
                     <div className="text-left">
                       <div className="text-base font-bold text-white group-hover:text-brand-primary transition-colors">{user.name}</div>
-                      <div className="text-[10px] font-black uppercase tracking-widest text-white/20">{user.phone || 'No direct dial'}</div>
+                      <div className="text-[10px] font-black uppercase tracking-widest text-white/20">{user.phone || user.email || 'No direct dial'}</div>
                     </div>
                   </div>
                   
@@ -805,6 +857,23 @@ export default function TripDashboard() {
                         className="w-10 h-10 glass rounded-xl flex items-center justify-center text-white/40 hover:text-emerald-400 hover:bg-emerald-500/10 transition-all"
                       >
                         <MessageCircle size={18} />
+                      </button>
+                    )}
+                    {user.email && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          sendTicketEmail(user);
+                        }}
+                        disabled={emailingUserId === user.id}
+                        className="w-10 h-10 glass rounded-xl flex items-center justify-center text-white/40 hover:text-sky-400 hover:bg-sky-500/10 transition-all disabled:opacity-50"
+                        title="Send live ticket email"
+                      >
+                        {emailingUserId === user.id ? (
+                          <div className="w-4 h-4 border-2 border-white/20 border-t-sky-400 rounded-full animate-spin" />
+                        ) : (
+                          <Mail size={18} />
+                        )}
                       </button>
                     )}
                     <div className={cn(
@@ -907,7 +976,7 @@ export default function TripDashboard() {
               </div>
 
               <h3 className="text-2xl font-black font-display text-white mb-2">{selectedUser.name}</h3>
-              <div className="text-[10px] font-black uppercase tracking-[0.2em] text-white/20 mb-8">{selectedUser.phone || 'No contact credentials'}</div>
+              <div className="text-[10px] font-black uppercase tracking-[0.2em] text-white/20 mb-8">{selectedUser.email || selectedUser.phone || 'No contact credentials'}</div>
               
               <div className="space-y-10">
                 <div className="flex justify-around items-center">
@@ -931,6 +1000,21 @@ export default function TripDashboard() {
                     </div>
                   )}
                 </div>
+
+                {selectedUser.email && (
+                  <button
+                    onClick={() => sendTicketEmail(selectedUser)}
+                    disabled={emailingUserId === selectedUser.id}
+                    className="w-full py-5 bg-sky-500 text-white rounded-2xl font-black uppercase tracking-widest flex items-center justify-center gap-2 shadow-2xl shadow-sky-500/20 hover:scale-105 active:scale-95 transition-all disabled:opacity-60"
+                  >
+                    {emailingUserId === selectedUser.id ? (
+                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    ) : (
+                      <Mail size={20} />
+                    )}
+                    <span>Send Live Ticket Email</span>
+                  </button>
+                )}
 
                 {selectedUser.phone && (
                   <button
