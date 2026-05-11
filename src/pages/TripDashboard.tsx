@@ -108,6 +108,12 @@ export default function TripDashboard() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ users: newUsers, tripName: trip?.name || 'Your Trip' })
           });
+          
+          if (!res.ok) {
+            const errorText = await res.text();
+            throw new Error(`Server returned ${res.status}: ${errorText.substring(0, 100)}...`);
+          }
+          
           const result = await res.json();
           if (result.missingKeys) {
             alert(`Passenger added successfully, but email skipped because SMTP credentials are missing.\n\nDebug Info:\nSMTP_USER Configured: ${result.debug?.SMTP_USER_present}\nSMTP_PASS Configured: ${result.debug?.SMTP_PASS_present}`);
@@ -431,6 +437,11 @@ export default function TripDashboard() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ users: newUsers, tripName: trip.name })
         });
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`Server returned ${response.status}: ${errorText.substring(0, 100)}...`);
+        }
         
         const result = await response.json();
         
