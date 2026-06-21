@@ -36,27 +36,17 @@ const PageLoader = () => (
 
 function AppRoutes() {
   const location = useLocation();
-  const isShowcase = location.pathname === '/showcase';
-  const isTripDashboard = location.pathname.match(/^\/trip\/[^/]+$/) !== null;
-  const isPassengerView = location.pathname.includes('/user/') || location.pathname.includes('/scan') || location.pathname.includes('/join');
   
-  // Set layout constraints based on page type
-  let layoutClass = "min-h-screen relative pb-24 mx-auto w-full";
-  if (!isShowcase && !location.pathname.startsWith('/track')) {
-    if (isTripDashboard) {
-      layoutClass += " max-w-6xl"; // Wide layout for dashboard
-    } else if (isPassengerView) {
-      layoutClass += " max-w-md"; // Narrow mobile-first layout
-    } else {
-      layoutClass += " max-w-4xl"; // Moderate admin layout
-    }
-  }
+  // Outer routing layer occupies full screen width to ensure backgrounds and gradient effects
+  // stretch edge-to-edge. Any structural containment is managed internally by the pages.
+  const layoutClass = "min-h-screen w-full relative bg-deep-forest text-slate-100 flex flex-col";
 
   return (
     <div className={layoutClass}>
       <Suspense fallback={<PageLoader />}>
         <Routes>
-          <Route path="/" element={<Home />} />
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/home" element={<Home />} />
           <Route path="/s/:shortId" element={<ShortLinkRedirect />} />
           <Route path="/login" element={<AdminLogin />} />
           <Route path="/signup" element={<Signup />} />

@@ -13,6 +13,7 @@ import QRCode from 'qrcode';
 import { useAdminAuth } from '../context/AdminAuthContext';
 import LeafletMap from '../components/LeafletMap';
 import AccessHub from '../components/AccessHub';
+import TripProgress from '../components/TripProgress';
 
 export default function TripDashboard() {
   const { tripId } = useParams();
@@ -559,30 +560,43 @@ export default function TripDashboard() {
 
       <div className="p-6 -mt-10 relative z-10 space-y-8">
         
-        {/* Progress Bar Section */}
-        <div className="brand-panel p-6 shadow-2xl relative overflow-hidden">
+        {/* Progress Bar Section (Multiple Indicators Card) */}
+        <div className="brand-panel p-6 shadow-2xl relative overflow-hidden flex flex-col gap-5">
           <div className="absolute top-0 right-0 w-32 h-32 bg-brand-primary/5 rounded-full blur-2xl -mr-16 -mt-16" />
-          <div className="flex justify-between items-end mb-4 relative z-10">
-            <div>
-              <div className="text-[10px] font-black uppercase tracking-widest text-white/40 mb-1">Boarding Progress</div>
-              <div className="text-2xl font-bold font-display text-white">
-                <span className="text-brand-primary">{boardedCount}</span> <span className="text-white/30">/</span> {users.length}
+          
+          <div>
+            <div className="flex justify-between items-end mb-4 relative z-10">
+              <div>
+                <div className="text-[10px] font-black uppercase tracking-widest text-white/40 mb-1">Boarding Progress</div>
+                <div className="text-2xl font-bold font-display text-white">
+                  <span className="text-brand-primary">{boardedCount}</span> <span className="text-white/30">/</span> {users.length}
+                </div>
+              </div>
+              <div className="text-right">
+                <div className="text-3xl font-black font-display text-brand-primary drop-shadow-[0_0_10px_rgba(187,255,77,0.3)]">{progressPercent}%</div>
               </div>
             </div>
-            <div className="text-right">
-              <div className="text-3xl font-black font-display text-brand-primary drop-shadow-[0_0_10px_rgba(187,255,77,0.3)]">{progressPercent}%</div>
+            <div className="w-full h-2 bg-white/5 rounded-full overflow-hidden relative z-10 border border-white/5">
+              <motion.div 
+                initial={{ width: 0 }}
+                animate={{ width: `${progressPercent}%` }}
+                transition={{ duration: 1, ease: 'easeOut' }}
+                className="h-full bg-brand-primary rounded-full relative"
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent to-white/30" />
+              </motion.div>
             </div>
           </div>
-          <div className="w-full h-2 bg-white/5 rounded-full overflow-hidden relative z-10 border border-white/5">
-            <motion.div 
-              initial={{ width: 0 }}
-              animate={{ width: `${progressPercent}%` }}
-              transition={{ duration: 1, ease: 'easeOut' }}
-              className="h-full bg-brand-primary rounded-full relative"
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent to-white/30" />
-            </motion.div>
-          </div>
+
+          {/* Thin aesthetic divider */}
+          {trip.tripDate && (
+            <>
+              <div className="h-px bg-white/10 w-full relative z-10" />
+              <div className="relative z-10">
+                <TripProgress trip={trip} showLabels={true} />
+              </div>
+            </>
+          )}
         </div>
         {/* SOS Grid */}
         {users.filter(u => u.sos?.active).length > 0 && (

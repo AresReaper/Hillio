@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Link } from 'react-router-dom';
 import { useAdminAuth } from '../context/AdminAuthContext';
 import { cn } from '../lib/utils';
+import TripProgress from '../components/TripProgress';
 
 export default function Home() {
   const [tripName, setTripName] = useState('');
@@ -435,18 +436,28 @@ export default function Home() {
                     >
                       <Link 
                         to={`/trip/${trip.id}`}
-                        className="w-full h-full flex flex-col p-5 glass-card !rounded-[28px] hover:bg-white/10 transition-all group !border-white/5 hover:!border-white/10 active:scale-[0.98]"
+                        className="w-full h-full flex flex-col p-5 glass-card !rounded-[28px] hover:bg-white/10 transition-all group !border-white/5 hover:!border-white/10 active:scale-[0.98] gap-4"
                       >
-                        <div className="flex items-center gap-3 mb-3">
-                           <div className="w-10 h-10 bg-brand-primary/10 rounded-xl flex items-center justify-center text-brand-primary border border-brand-primary/20 shrink-0">
-                            <Mountain size={20} />
+                        <div className="flex flex-col gap-1">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-brand-primary/10 rounded-xl flex items-center justify-center text-brand-primary border border-brand-primary/20 shrink-0">
+                              <Mountain size={20} />
+                            </div>
+                            <div className="text-base font-bold text-white group-hover:text-brand-primary transition-colors truncate">{trip.name}</div>
                           </div>
-                          <div className="text-base font-bold text-white group-hover:text-brand-primary transition-colors truncate">{trip.name}</div>
+                          <div className="text-[10px] text-white/40 uppercase tracking-wider font-bold mt-1 pl-[52px] truncate">
+                            {trip.destination}
+                          </div>
                         </div>
-                        <div className="text-[10px] text-white/40 uppercase tracking-wider font-bold mb-2 truncate">
-                          {trip.destination}
-                        </div>
-                        <div className="text-[10px] text-white/20 uppercase tracking-wider font-bold mt-auto flex items-center justify-between">
+
+                        {/* Visual Linear Progress Indicator */}
+                        {trip.tripDate && (
+                          <div className="px-1 py-1">
+                            <TripProgress trip={trip} showLabels={true} />
+                          </div>
+                        )}
+
+                        <div className="text-[10px] text-white/20 uppercase tracking-wider font-bold mt-auto pt-2 border-t border-white/[0.03] flex items-center justify-between">
                           <span>{trip.createdAt?.toDate ? new Date(trip.createdAt.toDate()).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : 'LOGGED'}</span>
                           <ArrowRight size={14} className="text-white/20 group-hover:text-brand-primary transition-all group-hover:translate-x-1" />
                         </div>
@@ -490,10 +501,11 @@ export default function Home() {
 
             <Link 
               to="/showcase"
-              className="btn-secondary !bg-transparent w-full mt-4"
+              className="btn-glass !border-emerald-500/10 hover:!border-[#bbff4d]/30 text-white w-full mt-4 flex items-center justify-center gap-2 relative group"
             >
-              <LayoutDashboard size={20} />
-              <span className="text-sm">Verandan Text</span>
+              <LayoutDashboard size={20} className="text-white/40 group-hover:text-[#bbff4d] transition-colors" />
+              <span className="text-base tracking-wide">Tour Operator SaaS Pitch</span>
+              <span className="absolute top-1/2 -translate-y-1/2 right-4 text-[9px] font-mono px-1.5 py-0.5 bg-[#bbff4d]/10 border border-[#bbff4d]/20 text-[#bbff4d] rounded uppercase scale-90 opacity-0 group-hover:opacity-100 transition-all">SaaS</span>
             </Link>
           </div>
         )}
