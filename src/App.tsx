@@ -12,7 +12,6 @@ const Scanner = React.lazy(() => import('./pages/Scanner'));
 const UniversalScanner = React.lazy(() => import('./pages/UniversalScanner'));
 const AdminLogin = React.lazy(() => import('./pages/AdminLogin'));
 const Signup = React.lazy(() => import('./pages/Signup'));
-const LandingPage = React.lazy(() => import('./showcase/LandingPage'));
 const ShortLinkRedirect = React.lazy(() => import('./pages/ShortLinkRedirect'));
 const TrackTrip = React.lazy(() => import('./pages/TrackTrip'));
 
@@ -45,12 +44,10 @@ function AppRoutes() {
     <div className={layoutClass}>
       <Suspense fallback={<PageLoader />}>
         <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/home" element={<Home />} />
+          <Route path="/" element={<Home />} />
           <Route path="/s/:shortId" element={<ShortLinkRedirect />} />
           <Route path="/login" element={<AdminLogin />} />
           <Route path="/signup" element={<Signup />} />
-          <Route path="/showcase" element={<LandingPage />} />
           <Route path="/track" element={<TrackTrip />} />
           <Route path="/track/:trackingId" element={<TrackTrip />} />
           <Route path="/scan" element={<UniversalScanner />} />

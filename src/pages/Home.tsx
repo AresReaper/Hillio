@@ -498,15 +498,6 @@ export default function Home() {
               <Search size={20} />
               <span className="text-base tracking-wide">Track a Trip</span>
             </Link>
-
-            <Link 
-              to="/showcase"
-              className="btn-glass !border-emerald-500/10 hover:!border-[#bbff4d]/30 text-white w-full mt-4 flex items-center justify-center gap-2 relative group"
-            >
-              <LayoutDashboard size={20} className="text-white/40 group-hover:text-[#bbff4d] transition-colors" />
-              <span className="text-base tracking-wide">Tour Operator SaaS Pitch</span>
-              <span className="absolute top-1/2 -translate-y-1/2 right-4 text-[9px] font-mono px-1.5 py-0.5 bg-[#bbff4d]/10 border border-[#bbff4d]/20 text-[#bbff4d] rounded uppercase scale-90 opacity-0 group-hover:opacity-100 transition-all">SaaS</span>
-            </Link>
           </div>
         )}
 
